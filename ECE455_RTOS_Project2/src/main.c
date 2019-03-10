@@ -153,6 +153,7 @@ functionality.
  * that was not already performed before main() was called.
  */
 static void prvSetupHardware( void );
+void vStupidTask(void* pvParameters);
 
 /*-----------------------------------------------------------*/
 
@@ -161,6 +162,8 @@ int main(void)
 	prvSetupHardware();
 
 	/* Start the tasks and timer running. */
+	TaskHandle_t stupid = (TaskHandle_t)xTaskCreate(vStupidTask, "stupid", configMINIMAL_STACK_SIZE, NULL, 1, NULL);
+	vTaskDelete(stupid);
 	vTaskStartScheduler();
 
 	return 0;
@@ -184,6 +187,13 @@ int main(void)
 
 /*-----------------------------------------------------------*/
 
+void vStupidTask(void* pvParameters)
+{
+	while(1)
+	{
+		vTaskDelay(1000);
+	}
+}
 
 /*-----------------------------------------------------------*/
 
