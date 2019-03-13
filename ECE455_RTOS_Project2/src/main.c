@@ -137,6 +137,7 @@ functionality.
 /* Standard includes. */
 #include <stdint.h>
 #include <stdio.h>
+#include <stdbool.h>
 #include "stm32f4_discovery.h"
 /* Kernel includes. */
 #include "stm32f4xx.h"
@@ -153,7 +154,10 @@ functionality.
  * that was not already performed before main() was called.
  */
 static void prvSetupHardware( void );
-void vStupidTask(void* pvParameters);
+void vDummyTask(void* pvParameters);
+void vMonitorTask(void* pvParameters);
+
+TaskHandle_t xDummyTask;
 
 /*-----------------------------------------------------------*/
 
@@ -162,8 +166,23 @@ int main(void)
 	prvSetupHardware();
 
 	/* Start the tasks and timer running. */
-	TaskHandle_t stupid = (TaskHandle_t)xTaskCreate(vStupidTask, "stupid", configMINIMAL_STACK_SIZE, NULL, 1, NULL);
-	vTaskDelete(stupid);
+	xTaskCreate(vDummyTask, "Dummy", configMINIMAL_STACK_SIZE, NULL, 2, &xDummyTask);
+	xTaskCreate(vMonitorTask, "Monitor", configMINIMAL_STACK_SIZE, NULL, 1, NULL);
+
+	if (xDummyTask != NULL)
+	{
+		printf("DummyTask successfully created!\n");
+		fflush(stdout);
+	}
+	else
+	{
+		printf("DummyTask FAILED to create!\n");
+		fflush(stdout);
+	}
+
+	unsigned int taskCount = uxTaskGetNumberOfTasks();
+	printf("Number of tasks at startup is: %d\n", taskCount);
+	fflush(stdout);
 	vTaskStartScheduler();
 
 	return 0;
@@ -187,13 +206,39 @@ int main(void)
 
 /*-----------------------------------------------------------*/
 
-void vStupidTask(void* pvParameters)
+void vDummyTask(void* pvParameters)
 {
 	while(1)
 	{
+		printf("Running Dummy Task once\n");
+		fflush(stdout);
 		vTaskDelay(1000);
 	}
 }
+void vMonitorTask(void* pvParameters)
+{
+	unsigned int taskCount = 0;
+	bool deleted = false;
+
+	taskCount = uxTaskGetNumberOfTasks();
+	printf("Number of tasks at FIRST mock run is: %d\n", taskCount);
+	fflush(stdout);
+
+	while(1)
+	{
+		if (deleted == false )
+		{
+			vTaskDelete(xDummyTask);
+			deleted = true;
+		}
+
+		taskCount = uxTaskGetNumberOfTasks();
+		printf("Number of tasks at mock run is: %d\n", taskCount);
+		fflush(stdout);
+		vTaskDelay(5000);
+	}
+}
+
 
 /*-----------------------------------------------------------*/
 
