@@ -147,12 +147,11 @@ functionality.
 #include "../FreeRTOS_Source/include/task.h"
 #include "../FreeRTOS_Source/include/timers.h"
 
+/* Application Includes */
+#include "config.h"
+#include "DD_Scheduler.h"
 
-/* FreeRTOS declarations */
-/*
- * TODO: Implement this function for any hardware specific clock configuration
- * that was not already performed before main() was called.
- */
+
 static void prvSetupHardware( void );
 void vDummyTask(void* pvParameters);
 void vMonitorTask(void* pvParameters);
