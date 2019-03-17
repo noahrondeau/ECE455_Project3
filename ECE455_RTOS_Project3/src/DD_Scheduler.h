@@ -8,21 +8,21 @@
 #ifndef DD_SCHEDULER_H_
 #define DD_SCHEDULER_H_
 
+#include <DD_Task.h>
 #include "config.h"
-#include "DDTask.h"
 
 
 /* ------------- Public Structs ----------------- */
 
-typedef u32 DDStatus_t; //TODO: actually figure out what to return
+typedef u32 DD_Status_t; //TODO: actually figure out what to return
 
 
 /* ------------- Public Functions --------------- */
 
-TaskHandle_t	DD_TaskCreate(DDTask_t tparams);
-DDStatus_t 		DD_TaskDelete(DDTask_t xTask);
-DDStatus_t		DD_ReturnActiveList(DDTaskList_t* retActiveList);
-DDStatus_t		DD_ReturnOverdueList(DDTaskList_t* retOverdueList);
+TaskHandle_t	DD_TaskCreate(DD_Task_t tparams);
+DD_Status_t 	DD_TaskDelete(DD_Task_t xTask);
+DD_Status_t		DD_ReturnActiveList(DD_TaskList_t* retActiveList);
+DD_Status_t		DD_ReturnOverdueList(DD_TaskList_t* retOverdueList);
 
 
 

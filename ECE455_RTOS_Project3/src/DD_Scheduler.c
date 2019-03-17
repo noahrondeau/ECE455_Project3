@@ -9,25 +9,25 @@
 #include "DD_Scheduler.h"
 
 
-TaskHandle_t	DD_TaskCreate(DDTask_t tparams)
+TaskHandle_t	DD_TaskCreate(DD_Task_t tparams)
 {
 	//TODO
 	return NULL;
 }
 
-DDStatus_t 	DD_TaskDelete(DDTask_t xTask)
+DD_Status_t 	DD_TaskDelete(DD_Task_t xTask)
 {
 	//TODO
 	return 0;
 }
 
-DDStatus_t		DD_ReturnActiveList(DDTaskList_t* retActiveList)
+DD_Status_t		DD_ReturnActiveList(DD_TaskList_t* retActiveList)
 {
 	//TODO
 	return 0;
 }
 
-DDStatus_t		DD_ReturnOverdueList(DDTaskList_t* retOverdueList)
+DD_Status_t		DD_ReturnOverdueList(DD_TaskList_t* retOverdueList)
 {
 	//TODO
 	return 0;
