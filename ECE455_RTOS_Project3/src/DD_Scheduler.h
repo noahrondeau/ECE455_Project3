@@ -9,25 +9,20 @@
 #define DD_SCHEDULER_H_
 
 #include "config.h"
+#include "DDTask.h"
 
 
 /* ------------- Public Structs ----------------- */
 
-typedef u32 DD_Status_t; //TODO: actually figure out what to return
-typedef u32 LinkedList; //TODO: actually implement a list
-
-typedef struct DD_TaskParams_t
-{
-	//TODO
-} DD_TaskParams_t;
+typedef u32 DDStatus_t; //TODO: actually figure out what to return
 
 
 /* ------------- Public Functions --------------- */
 
-TaskHandle_t	DD_TaskCreate(DD_TaskParams_t tparams);
-DD_Status_t 	DD_TaskDelete(TaskHandle_t xTask);
-DD_Status_t		DD_ReturnActiveList(LinkedList* retActiveList);
-DD_Status_t		DD_ReturnOverdueList(LinkedList* retOverdueList);
+TaskHandle_t	DD_TaskCreate(DDTask_t tparams);
+DDStatus_t 		DD_TaskDelete(DDTask_t xTask);
+DDStatus_t		DD_ReturnActiveList(DDTaskList_t* retActiveList);
+DDStatus_t		DD_ReturnOverdueList(DDTaskList_t* retOverdueList);
 
 
 
