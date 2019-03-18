@@ -204,7 +204,7 @@ int main(void)
 
 
 /*-----------------------------------------------------------*/
-
+//TEST TASKS
 void vDummyTask(void* pvParameters)
 {
 	while(1)
@@ -214,6 +214,9 @@ void vDummyTask(void* pvParameters)
 		vTaskDelay(1000);
 	}
 }
+
+
+//PROJECT TASKS
 void vMonitorTask(void* pvParameters)
 {
 	unsigned int taskCount = 0;
