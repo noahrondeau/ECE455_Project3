@@ -8,7 +8,12 @@
 
 #include "DD_Scheduler.h"
 
+/* ---------------- PRIVATE DEFINTIONS ----------------- */
 
+static DD_TaskList_t xActiveTaskList;
+static DD_TaskList_t xOverdueTaskList;
+
+/* ---------------- PUBLIC INTERFACE ------------------ */
 TaskHandle_t	DD_TaskCreate(DD_Task_t tparams)
 {
 	//TODO
@@ -23,16 +28,14 @@ DD_Status_t 	DD_TaskDelete(DD_Task_t xTask)
 
 DD_Status_t		DD_ReturnActiveList(DD_TaskList_t* retActiveList)
 {
-	//TODO
+	//TODO : return either a copy of the list or a pointer to it
 	return 0;
 }
 
 DD_Status_t		DD_ReturnOverdueList(DD_TaskList_t* retOverdueList)
 {
-	//TODO
+	//TODO : return either a copy of the list or a pointer to it
 	return 0;
 }
-
-
 
 

@@ -10,6 +10,7 @@
 
 #include "config.h"
 #include "DD_TaskPriority.h"
+#include "DD_Status.h"
 
 typedef enum DD_TaskStatus_t
 {
@@ -26,19 +27,41 @@ typedef struct DD_Task_t
 	TickType_t			xCreationTime;
 	TickType_t			xRelDeadline;
 	TickType_t			xAbsDeadline;
-	DD_TaskPriority_t	xTaskPriority;
+	DD_TaskPriority_t	xPriority;
 	DD_TaskStatus_t		xStatus;
 	struct DD_Task_t*	pPrev;
 	struct DD_Task_t*	pNext;
 
 } DD_Task_t;
 
+typedef DD_Task_t* DD_TaskHandle_t;
+
 typedef struct DD_TaskList_t
 {
-	u32				uSize;
-	DD_Task_t*		pListHead;
-	DD_Task_t*		pListTail;
+	u32					uSize;
+	DD_TaskHandle_t		pHead;
+	DD_TaskHandle_t		pTail;
 } DD_TaskList_t;
+
+typedef DD_TaskList_t* DD_TaskListHandle_t;
+
+/*------------------- Task Functions ----------------*/
+
+// malloc a DD_Task_t and return handle
+// leaves all fields at default values and internal pointers null
+DD_TaskHandle_t DD_TaskAlloc();
+
+/*----------------- Task List Functions -------------
+ * This is an ordered linked list
+ */
+
+DD_Status_t 			DD_TaskListInit(DD_TaskListHandle_t list);
+u32						DD_TaskListGetSize(DD_TaskListHandle_t list);
+bool					DD_TaskListIsEmpty(DD_TaskListHandle_t list);
+DD_Status_t				DD_TaskListInsertByDeadline(DD_TaskListHandle_t list, DD_TaskHandle_t task);
+DD_Status_t				DD_TaskListRemoveByHandle(DD_TaskListHandle_t list, DD_TaskHandle_t task);
+DD_TaskList_t			DD_TaskListRemoveOverdue(DD_TaskListHandle_t list, TickType_t currentTime);
+DD_Status_t				DD_TaskListConcatenate(DD_TaskListHandle_t list1, DD_TaskListHandle_t list2);
 
 
 

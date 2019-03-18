@@ -26,10 +26,10 @@ typedef u8 DD_TaskPriority_t;
 #define DD_TASK_PRIORITY_IDLE			(0) // Tentatively could be set to 1!
 #define DD_TASK_PRIORITY_UNRELEASED		(1) // tentatively could be set to 0!
 #define	DD_TASK_PRIOTITY_MONITOR		(2)
-#define DD_TASK_GEN_RESERVED_MIN		(3)
-#define DD_TASK_GEN_RESERVED_MAX		(20)
-#define	DD_TASK_USER_RESERVED_MIN		(21)
-#define DD_TASK_USER_RESERVED_MAX		(254)
+#define DD_TASK_GEN_PRIORITY_MIN		(3)
+#define DD_TASK_GEN_PRIORITY_MAX		(20)
+#define	DD_TASK_USER_PRIORITY_MIN		(21)
+#define DD_TASK_USER_PRIORITY_MAX		(254)
 #define DD_TASK_PRIORITY_SCHEDULER		(255)
 
 

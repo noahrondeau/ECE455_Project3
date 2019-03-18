@@ -8,14 +8,9 @@
 #ifndef DD_SCHEDULER_H_
 #define DD_SCHEDULER_H_
 
-#include <DD_Task.h>
 #include "config.h"
-
-
-/* ------------- Public Structs ----------------- */
-
-typedef u32 DD_Status_t; //TODO: actually figure out what to return
-
+#include "DD_Task.h"
+#include "DD_Status.h"
 
 /* ------------- Public Functions --------------- */
 
