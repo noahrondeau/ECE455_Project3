@@ -51,6 +51,14 @@ typedef DD_TaskList_t* DD_TaskListHandle_t;
 // leaves all fields at default values and internal pointers null
 DD_TaskHandle_t DD_TaskAlloc();
 
+// deallocates a DD_TaskHandle_t pointer
+// precondition:
+//		ddTask was allocated using DD_TaskAlloc()
+//		TaskHandle_t already independently deallocated
+// 		by calling vTaskDelete on the internal ddTask->xTask
+//
+DD_Status_t		DD_TaskDealloc(DD_TaskHandle_t ddTask);
+
 /*----------------- Task List Functions -------------
  * This is an ordered linked list
  */

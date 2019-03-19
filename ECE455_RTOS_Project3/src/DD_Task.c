@@ -29,6 +29,38 @@ DD_TaskHandle_t DD_TaskAlloc()
 	return ret;
 }
 
+// deallocates a DD_TaskHandle_t pointer
+// precondition:
+//		ddTask was allocated using DD_TaskAlloc()
+//		TaskHandle_t already independently deallocated
+// 		by calling vTaskDelete on the internal ddTask->xTask
+//		The next and prev pointers have been properly handled and set to null
+DD_Status_t		DD_TaskDealloc(DD_TaskHandle_t ddTask)
+{
+	// xTask needs to be already null and properly deallocated: return error otherwise
+	if (ddTask->xTask != NULL)
+		return DD_Task_Dealloc_Fail_xTask_Not_Null;
+
+	if (ddTask->pNext != NULL)
+		return DD_Task_Dealloc_Fail_pNext_Not_Null;
+
+	if (ddTask->pPrev != NULL)
+		return DD_Task_Dealloc_Fail_pPrev_Not_Null;
+
+	// other fields can be filled, xFunction is static
+	// zero out the memory just as good practice
+	ddTask->xFunction = NULL;
+	ddTask->xAbsDeadline = 0;
+	ddTask->xCreationTime = 0;
+	ddTask->xRelDeadline = 0;
+	ddTask->xStatus = 0;
+
+	vPortFree((void*)ddTask);
+
+	return DD_Success;
+
+}
+
 /*----------------- Task List Functions -------------
  * This is an ordered linked list
  * The API ensures that anything inserted remains sorted by ascending deadline
