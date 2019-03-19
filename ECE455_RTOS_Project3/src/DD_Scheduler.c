@@ -39,7 +39,7 @@ QueueHandle_t DDChannel_Delete = NULL;
  * Waits for Scheduler to empty the Queue, once emptied the queue will be deleted
  */
 
-TaskHandle_t	DD_TaskCreate(DD_Task_t tparams)
+TaskHandle_t	DD_TaskCreate(DD_Task_t* tparams)
 {
 	//Opens the Queue by creating it
 	DDChannel_Create = xQueueCreate(1,sizeof( DD_Task_t));
@@ -52,7 +52,7 @@ TaskHandle_t	DD_TaskCreate(DD_Task_t tparams)
 	}
 
 	//created the task passed in through params
-	xTaskCreate(tparams.xFunction,"IDK",configMINIMAL_STACK_SIZE,NULL,tparams.xPriority,&(tparams.xTask));
+	xTaskCreate(tparams->xFunction,"IDK",configMINIMAL_STACK_SIZE,NULL,tparams->xPriority,&(tparams->xTask));
 	printf("task created");
 	/*send a message to the scheduler containing the task
 	 * Scheduler will check to see if the queue is empty, if not receive message, do its thing then empty queue
