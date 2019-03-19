@@ -42,7 +42,7 @@ DD_Status_t DD_TaskListInit(DD_TaskListHandle_t list)
 	list->pHead = NULL;
 	list->pTail = NULL;
 
-	return 0;
+	return DD_Success;
 }
 
 u32	DD_TaskListGetSize(DD_TaskListHandle_t list)
@@ -58,13 +58,13 @@ bool DD_TaskListIsEmpty(DD_TaskListHandle_t list)
 // traverse the list from the front, modifying deadlines until the insertion point is found
 DD_Status_t	DD_TaskListInsertByDeadline(DD_TaskListHandle_t list, DD_TaskHandle_t task)
 {
-	return 0;
+	return DD_None;
 }
 
 // traverse the list front the front, modifying deadlines until the removal point is found
 DD_Status_t	DD_TaskListRemoveByHandle(DD_TaskListHandle_t list, DD_TaskHandle_t task)
 {
-	return 0;
+	return DD_None;
 }
 
 // collect all overdue tasks into a temp list and return it (by value for the list struct)
@@ -78,5 +78,5 @@ DD_TaskList_t DD_TaskListRemoveOverdue(DD_TaskListHandle_t list, TickType_t curr
 // append list2 to list1
 DD_Status_t	DD_TaskListConcatenate(DD_TaskListHandle_t list1, DD_TaskListHandle_t list2)
 {
-	return 0;
+	return DD_None;
 }

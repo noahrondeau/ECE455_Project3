@@ -11,6 +11,10 @@
 typedef enum DD_Status_t
 {
 	DD_None,
+	DD_Success,
+	DD_Failure,
+	DD_Error_Queue_Open_Fail,
+	DD_Error_Queue_Close_Fail,
 } DD_Status_t;
 
 #endif /* DD_STATUS_H_ */

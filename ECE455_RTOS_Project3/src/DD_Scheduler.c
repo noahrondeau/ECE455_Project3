@@ -67,7 +67,7 @@ DD_Status_t	DD_TaskCreate(DD_TaskHandle_t ddTask)
 	//Task Creation success
 	printf("DD_TaskCreate Success");
 
-	return 0;
+	return DD_Success;
 }
 
 DD_Status_t 	DD_TaskDelete(TaskHandle_t xTask)
@@ -98,19 +98,19 @@ DD_Status_t 	DD_TaskDelete(TaskHandle_t xTask)
 	//Task Deletion success
 	printf("DD_TaskDelete Success");
 
-	return 0;
+	return DD_Success;
 }
 
 DD_Status_t		DD_ReturnActiveList(DD_TaskListHandle_t retActiveList)
 {
 	//TODO : return either a copy of the list or a pointer to it
-	return 0;
+	return DD_None;
 }
 
 DD_Status_t		DD_ReturnOverdueList(DD_TaskListHandle_t retOverdueList)
 {
 	//TODO : return either a copy of the list or a pointer to it
-	return 0;
+	return DD_None;
 }
 
 
