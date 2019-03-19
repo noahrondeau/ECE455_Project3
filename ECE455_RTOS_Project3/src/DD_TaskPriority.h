@@ -32,5 +32,9 @@ typedef u8 DD_TaskPriority_t;
 #define DD_TASK_USER_PRIORITY_MAX		(254)
 #define DD_TASK_PRIORITY_SCHEDULER		(255)
 
+#define DD_TASK_USER_PRIORITY(__num__)	(((DD_TASK_USER_PRIORITY_MIN + (__num__)) <= (DD_TASK_USER_PRIORITY_MAX)) ? \
+										(DD_TASK_USER_PRIORITY_MIN + (__num__)) : \
+										DD_TASK_USER_PRIORITY_MAX)
+
 
 #endif /* DD_TASKPRIORITY_H_ */
