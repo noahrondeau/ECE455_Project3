@@ -156,7 +156,9 @@ functionality.
 static void prvSetupHardware( void );
 void vDummyTask(void* pvParameters);
 void vMonitorTask(void* pvParameters);
+void vQueueTest(void* pvParameters);
 
+TaskHandle_t xQueueTest;
 TaskHandle_t xDummyTask;
 
 /*-----------------------------------------------------------*/
@@ -168,6 +170,9 @@ int main(void)
 	/* Start the tasks and timer running. */
 	xTaskCreate(vDummyTask, "Dummy", configMINIMAL_STACK_SIZE, NULL, 2, &xDummyTask);
 	xTaskCreate(vMonitorTask, "Monitor", configMINIMAL_STACK_SIZE, NULL, 1, NULL);
+
+	xTaskCreate(vQueueTest,"Queue Read Test", configMINIMAL_STACK_SIZE, NULL, 20, &xQueueTest);
+	xTaskCreate(vPeriodicGenerator,"Generator Test", configMINIMAL_STACK_SIZE, NULL, 1, &xPeriodicGenerator);
 
 	if (xDummyTask != NULL)
 	{
@@ -213,6 +218,21 @@ void vDummyTask(void* pvParameters)
 		printf("Running Dummy Task once\n");
 		fflush(stdout);
 		vTaskDelay(1000);
+	}
+}
+
+void vQueueTest(void* pvParameters){
+	while(1)
+	{
+		if(DDChannel_Create != NULL){
+			printf("item in Create Queue, resetting");
+			xQueueReset(DDChannel_Create);
+		}
+		if(DDChannel_Delete != NULL){
+			printf("item in Delete Queue, resetting");
+			xQueueReset(DDChannel_Delete);
+		}
+		vTaskDelay(100);
 	}
 }
 

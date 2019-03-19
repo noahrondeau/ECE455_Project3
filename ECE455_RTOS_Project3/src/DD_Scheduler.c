@@ -12,8 +12,10 @@
 
 static DD_TaskList_t xActiveTaskList;
 static DD_TaskList_t xOverdueTaskList;
+
 QueueHandle_t DDChannel_Create = NULL; //not sure if this is the appropriate place to put this
 QueueHandle_t DDChannel_Delete = NULL;
+
 
 /* ---------------- PUBLIC INTERFACE ------------------ */
 

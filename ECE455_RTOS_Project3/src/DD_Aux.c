@@ -43,6 +43,8 @@ void vPeriodicGenerator(void *pvParamaters){
 
 	DD_TaskCreate(ddNewTask);
 
+	printf("task generated");
+
 	//Delay as per the example in the lab manual, we can change this to whatever we want
 	vTaskDelay(250);
 
