@@ -92,13 +92,82 @@ bool DD_TaskListIsEmpty(DD_TaskListHandle_t list)
 }
 
 // traverse the list from the front, modifying deadlines until the insertion point is found
-DD_Status_t	DD_TaskListInsertByDeadline(DD_TaskListHandle_t list, DD_TaskHandle_t task)
+DD_Status_t	DD_TaskListInsertByDeadline(DD_TaskListHandle_t list, DD_TaskHandle_t ddTask)
 {
-	return DD_None;
+	// case list is empty
+	if (DD_TaskListIsEmpty(list))
+	{
+		list->pHead = ddTask;
+		list->pTail = ddTask;
+		list->uSize = 1;
+		ddTask->xPriority = DD_TASK_USER_PRIORITY(0);
+		vTaskPrioritySet(ddTask->xTask, ddTask->xPriority);
+		return DD_Success;
+	}
+
+	// FALL THROUGH CASE: NOT EMPTY
+
+	// traverse starting at the head of the list
+	// increase priorities while we aren't there
+	DD_TaskHandle_t pAux = list->pHead; // auxilliary pointer for traversing list
+
+	while(pAux != NULL) // traverse until the end
+	{
+
+		if (ddTask->xAbsDeadline < pAux->xAbsDeadline)
+		{
+			// insert the piece here, being careful if its at the front or the back
+
+			// if at the front
+			ddTask->pNext = pAux;
+			ddTask->pPrev = pAux->pPrev; // will be null if pAux == pHead
+			pAux->pPrev = ddTask;
+
+			// if inserting at the front, move the head pointer
+			if (pAux == list->pHead )
+				list->pHead = ddTask;
+
+			// set the priority to 1 more than pAux priority
+			ddTask->xPriority = pAux->xPriority  + 1;
+			vTaskPrioritySet(ddTask->xTask, ddTask->xPriority);
+
+			(list->uSize)++;
+			return DD_Success; // early return from here
+
+		}
+		else
+		{
+			// if the deadline of the new task is greater OR EQUAL to a task,
+			// increase the priority of the task then move to the next one
+			// theres a special case here if we are inspecting the last item currently in the list
+			pAux->xPriority += 1;
+			vTaskPrioritySet(pAux->xTask, pAux->xPriority);
+
+			if ( pAux == list->pTail )
+			{
+				//if last node, insert after
+				ddTask->pPrev = pAux;
+				ddTask->pNext = NULL;
+				pAux->pNext = ddTask;
+				list->pTail = ddTask;
+
+				ddTask->xPriority = DD_TASK_USER_PRIORITY(0);
+				vTaskPrioritySet(ddTask->xTask, ddTask->xPriority);
+			}
+
+			pAux++; // no early return, want to keep iterating
+					// or, if at end of list, then we just inserted,
+					// and we can safely fall out of the loop and return
+
+		}
+	}
+
+	(list->uSize)++;
+	return DD_Success;
 }
 
 // traverse the list front the front, modifying deadlines until the removal point is found
-DD_Status_t	DD_TaskListRemoveByHandle(DD_TaskListHandle_t list, DD_TaskHandle_t task)
+DD_Status_t	DD_TaskListRemoveByHandle(DD_TaskListHandle_t list, DD_TaskHandle_t ddTask)
 {
 	return DD_None;
 }

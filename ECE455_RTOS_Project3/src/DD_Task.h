@@ -68,8 +68,8 @@ DD_Status_t		DD_TaskDealloc(DD_TaskHandle_t ddTask);
 DD_Status_t 			DD_TaskListInit(DD_TaskListHandle_t list);
 u32						DD_TaskListGetSize(DD_TaskListHandle_t list);
 bool					DD_TaskListIsEmpty(DD_TaskListHandle_t list);
-DD_Status_t				DD_TaskListInsertByDeadline(DD_TaskListHandle_t list, DD_TaskHandle_t task);
-DD_Status_t				DD_TaskListRemoveByHandle(DD_TaskListHandle_t list, DD_TaskHandle_t task);
+DD_Status_t				DD_TaskListInsertByDeadline(DD_TaskListHandle_t list, DD_TaskHandle_t ddTask);
+DD_Status_t				DD_TaskListRemoveByHandle(DD_TaskListHandle_t list, DD_TaskHandle_t ddTask);
 DD_TaskList_t			DD_TaskListRemoveOverdue(DD_TaskListHandle_t list, TickType_t currentTime);
 DD_Status_t				DD_TaskListConcatenate(DD_TaskListHandle_t list1, DD_TaskListHandle_t list2);
 

@@ -14,6 +14,7 @@
 #include <stdio.h>
 #include <stdbool.h>
 #include "stm32f4_discovery.h"
+#include <limits.h>
 
 #include "stm32f4xx.h"
 #include "../FreeRTOS_Source/include/FreeRTOS.h"
