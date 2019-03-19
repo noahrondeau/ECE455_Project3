@@ -49,25 +49,25 @@ DD_Status_t	DD_TaskCreate(DD_TaskHandle_t ddTask)
 	//Checks if queue created successfully
 	if(DDChannel_Create == NULL)
 	{
-		printf("Error creating queue");
+		printf("Error creating queue\n");
 		//Code here for if not created successfully
 	}
 
 	//created the task passed in through params
 	xTaskCreate(ddTask->xFunction,ddTask->sTaskName,ddTask->uStackSize,NULL,ddTask->xPriority,&(ddTask->xTask));
-	printf("task created");
+	printf("Task created\n");
 	/*send a message to the scheduler containing the task
 	 * Scheduler will check to see if the queue is empty, if not receive message, do its thing then empty queue
 	 */
 	xQueueSend(DDChannel_Create,&ddTask,10);
-	printf("Message sent to scheduler");
+	printf("Message sent to scheduler\n");
 
 	//If queue is not empty, message not received and wait before destroying channel
 	while(uxQueueSpacesAvailable(DDChannel_Create) == 0);
 	vQueueDelete(DDChannel_Create);
 
 	//Task Creation success
-	printf("DD_TaskCreate Success");
+	printf("DD_TaskCreate Success\n");
 
 	return DD_Success;
 }
@@ -80,25 +80,25 @@ DD_Status_t 	DD_TaskDelete(TaskHandle_t xTask)
 	//Checks if queue created successfully
 	if(DDChannel_Delete == NULL)
 	{
-		printf("Error creating queue");
+		printf("Error creating queue\n");
 		//Code here for if not created successfully
 	}
 
 	//Deletes the task according to the task handle in the passed in struct
 	vTaskDelete(xTask);
-	printf("Task Deleted");
+	printf("Task Deleted \n");
 
 	/*Send a message to the scheduler containing the task struct
 	 *Scheduler will check to see if the queue is empty, if not receive message, do its thing then empty queue
 	 */
 	xQueueSend(DDChannel_Delete,xTask,10);
-	printf("Message sent to scheduler");
+	printf("Message sent to scheduler \n");
 
 	//If queue is not empty, message not received and wait before destroying channel
 	while(uxQueueSpacesAvailable(DDChannel_Delete) == 0);
 	vQueueDelete(DDChannel_Delete);
 	//Task Deletion success
-	printf("DD_TaskDelete Success");
+	printf("DD_TaskDelete Success \n");
 
 	return DD_Success;
 }

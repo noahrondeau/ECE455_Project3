@@ -171,7 +171,7 @@ int main(void)
 	xTaskCreate(vDummyTask, "Dummy", configMINIMAL_STACK_SIZE, NULL, 2, &xDummyTask);
 	xTaskCreate(vMonitorTask, "Monitor", configMINIMAL_STACK_SIZE, NULL, 1, NULL);
 
-	xTaskCreate(vQueueTest,"Queue Read Test", configMINIMAL_STACK_SIZE, NULL, 20, &xQueueTest);
+	xTaskCreate(vQueueTest,"Queue Read Test", configMINIMAL_STACK_SIZE, NULL, 3, &xQueueTest);
 	xTaskCreate(vPeriodicGenerator,"Generator Test", configMINIMAL_STACK_SIZE, NULL, 1, &xPeriodicGenerator);
 
 	if (xDummyTask != NULL)
@@ -225,11 +225,11 @@ void vQueueTest(void* pvParameters){
 	while(1)
 	{
 		if(DDChannel_Create != NULL){
-			printf("item in Create Queue, resetting");
+			printf("item in Create Queue, resetting \n");
 			xQueueReset(DDChannel_Create);
 		}
 		if(DDChannel_Delete != NULL){
-			printf("item in Delete Queue, resetting");
+			printf("item in Delete Queue, resetting \n");
 			xQueueReset(DDChannel_Delete);
 		}
 		vTaskDelay(100);
