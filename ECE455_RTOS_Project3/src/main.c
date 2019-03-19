@@ -150,6 +150,7 @@ functionality.
 /* Application Includes */
 #include "config.h"
 #include "DD_Scheduler.h"
+#include "DD_Aux.h"
 
 
 static void prvSetupHardware( void );
