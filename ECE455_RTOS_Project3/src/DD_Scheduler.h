@@ -14,10 +14,10 @@
 
 /* ------------- Public Functions --------------- */
 
-TaskHandle_t	DD_TaskCreate(DD_Task_t* tparams);
-DD_Status_t 	DD_TaskDelete(DD_Task_t xTask);
-DD_Status_t		DD_ReturnActiveList(DD_TaskList_t* retActiveList);
-DD_Status_t		DD_ReturnOverdueList(DD_TaskList_t* retOverdueList);
+DD_Status_t		DD_TaskCreate(DD_TaskHandle_t ddTask);
+DD_Status_t 	DD_TaskDelete(TaskHandle_t xTask); // could take a DD_TaskHandle_t obtained with container_of
+DD_Status_t		DD_ReturnActiveList(DD_TaskListHandle_t retActiveList);
+DD_Status_t		DD_ReturnOverdueList(DD_TaskListHandle_t retOverdueList);
 
 
 

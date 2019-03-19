@@ -11,7 +11,6 @@
 #include "config.h"
 #include "DD_Scheduler.h"
 
-TaskHandle_t xPeriodicTask;
 TaskHandle_t xPeriodicGenerator;
 
 void vPeriodicTask(void *pvParamaters);

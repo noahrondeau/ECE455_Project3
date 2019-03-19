@@ -39,7 +39,7 @@ QueueHandle_t DDChannel_Delete = NULL;
  * Waits for Scheduler to empty the Queue, once emptied the queue will be deleted
  */
 
-TaskHandle_t	DD_TaskCreate(DD_Task_t* tparams)
+DD_Status_t	DD_TaskCreate(DD_TaskHandle_t ddTask)
 {
 	//Opens the Queue by creating it
 	DDChannel_Create = xQueueCreate(1,sizeof( DD_Task_t));
@@ -52,12 +52,12 @@ TaskHandle_t	DD_TaskCreate(DD_Task_t* tparams)
 	}
 
 	//created the task passed in through params
-	xTaskCreate(tparams->xFunction,"IDK",configMINIMAL_STACK_SIZE,NULL,tparams->xPriority,&(tparams->xTask));
+	xTaskCreate(ddTask->xFunction,"IDK",configMINIMAL_STACK_SIZE,NULL,ddTask->xPriority,&(ddTask->xTask));
 	printf("task created");
 	/*send a message to the scheduler containing the task
 	 * Scheduler will check to see if the queue is empty, if not receive message, do its thing then empty queue
 	 */
-	xQueueSend(DDChannel_Create,&tparams,10);
+	xQueueSend(DDChannel_Create,&ddTask,10);
 	printf("Message sent to scheduler");
 
 	//If queue is not empty, message not received and wait before destroying channel
@@ -67,13 +67,13 @@ TaskHandle_t	DD_TaskCreate(DD_Task_t* tparams)
 	//Task Creation success
 	printf("DD_TaskCreate Success");
 
-	return NULL;
+	return 0;
 }
 
-DD_Status_t 	DD_TaskDelete(DD_Task_t xTask)
+DD_Status_t 	DD_TaskDelete(TaskHandle_t xTask)
 {
 	//Opens the Queue by creating it
-	DDChannel_Delete = xQueueCreate(1,sizeof( DD_Task_t));
+	DDChannel_Delete = xQueueCreate(1,sizeof(TaskHandle_t));
 
 	//Checks if queue created successfully
 	if(DDChannel_Delete == NULL)
@@ -83,13 +83,13 @@ DD_Status_t 	DD_TaskDelete(DD_Task_t xTask)
 	}
 
 	//Deletes the task according to the task handle in the passed in struct
-	vTaskDelete(&(xTask.xTask));
+	vTaskDelete(xTask);
 	printf("Task Deleted");
 
 	/*Send a message to the scheduler containing the task struct
 	 *Scheduler will check to see if the queue is empty, if not receive message, do its thing then empty queue
 	 */
-	xQueueSend(DDChannel_Delete,&xTask,10);
+	xQueueSend(DDChannel_Delete,xTask,10);
 	printf("Message sent to scheduler");
 
 	//If queue is not empty, message not received and wait before destroying channel
@@ -101,13 +101,13 @@ DD_Status_t 	DD_TaskDelete(DD_Task_t xTask)
 	return 0;
 }
 
-DD_Status_t		DD_ReturnActiveList(DD_TaskList_t* retActiveList)
+DD_Status_t		DD_ReturnActiveList(DD_TaskListHandle_t retActiveList)
 {
 	//TODO : return either a copy of the list or a pointer to it
 	return 0;
 }
 
-DD_Status_t		DD_ReturnOverdueList(DD_TaskList_t* retOverdueList)
+DD_Status_t		DD_ReturnOverdueList(DD_TaskListHandle_t retOverdueList)
 {
 	//TODO : return either a copy of the list or a pointer to it
 	return 0;
