@@ -52,7 +52,7 @@ DD_Status_t	DD_TaskCreate(DD_TaskHandle_t ddTask)
 	}
 
 	//created the task passed in through params
-	xTaskCreate(ddTask->xFunction,"IDK",configMINIMAL_STACK_SIZE,NULL,ddTask->xPriority,&(ddTask->xTask));
+	xTaskCreate(ddTask->xFunction,ddTask->sTaskName,ddTask->uStackSize,NULL,ddTask->xPriority,&(ddTask->xTask));
 	printf("task created");
 	/*send a message to the scheduler containing the task
 	 * Scheduler will check to see if the queue is empty, if not receive message, do its thing then empty queue

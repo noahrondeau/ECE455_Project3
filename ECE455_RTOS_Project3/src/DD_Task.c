@@ -18,6 +18,8 @@ DD_TaskHandle_t DD_TaskAlloc()
 
 	ret->xTask = NULL;
 	ret->xFunction = NULL;
+	ret->sTaskName = "";
+	ret->uStackSize = configMINIMAL_STACK_SIZE;
 	ret->xCreationTime = 0;
 	ret->xAbsDeadline = 0;
 	ret->xRelDeadline = 0;
@@ -50,6 +52,8 @@ DD_Status_t		DD_TaskDealloc(DD_TaskHandle_t ddTask)
 	// other fields can be filled, xFunction is static
 	// zero out the memory just as good practice
 	ddTask->xFunction = NULL;
+	ddTask->sTaskName = NULL;
+	ddTask->uStackSize = 0;
 	ddTask->xAbsDeadline = 0;
 	ddTask->xCreationTime = 0;
 	ddTask->xRelDeadline = 0;

@@ -29,6 +29,8 @@ typedef struct DD_Task_t
 	TickType_t			xAbsDeadline;
 	DD_TaskPriority_t	xPriority;
 	DD_TaskStatus_t		xStatus;
+	char*				sTaskName;
+	u16					uStackSize;
 	struct DD_Task_t*	pPrev;
 	struct DD_Task_t*	pNext;
 

@@ -22,6 +22,7 @@ void vPeriodicGenerator(void *pvParamaters){
 
 	//refers to the empty periodic task
 	ddNewTask->xFunction = vPeriodicTask;
+	ddNewTask->sTaskName = "Periodic Task 1";
 
 	//subject to change
 	/*Desired:
