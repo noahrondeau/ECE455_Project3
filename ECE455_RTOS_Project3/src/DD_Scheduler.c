@@ -45,6 +45,7 @@ DD_Status_t	DD_TaskCreate(DD_TaskHandle_t ddTask)
 {
 	//Opens the Queue by creating it
 	DDChannel_Create = xQueueCreate(1,sizeof( DD_Task_t));
+	vQueueAddToRegistry(DDChannel_Create,"Create Queue");
 
 	//Checks if queue created successfully
 	if(DDChannel_Create == NULL)
@@ -66,6 +67,8 @@ DD_Status_t	DD_TaskCreate(DD_TaskHandle_t ddTask)
 	while(uxQueueSpacesAvailable(DDChannel_Create) == 0);
 	vQueueDelete(DDChannel_Create);
 
+	DDChannel_Create = NULL;
+
 	//Task Creation success
 	printf("DD_TaskCreate Success\n");
 
@@ -76,7 +79,7 @@ DD_Status_t 	DD_TaskDelete(TaskHandle_t xTask)
 {
 	//Opens the Queue by creating it
 	DDChannel_Delete = xQueueCreate(1,sizeof(TaskHandle_t));
-
+	vQueueAddToRegistry(DDChannel_Delete,"Delete Queue");
 	//Checks if queue created successfully
 	if(DDChannel_Delete == NULL)
 	{
@@ -97,6 +100,7 @@ DD_Status_t 	DD_TaskDelete(TaskHandle_t xTask)
 	//If queue is not empty, message not received and wait before destroying channel
 	while(uxQueueSpacesAvailable(DDChannel_Delete) == 0);
 	vQueueDelete(DDChannel_Delete);
+	DDChannel_Delete = NULL;
 	//Task Deletion success
 	printf("DD_TaskDelete Message Success \n");
 

@@ -227,10 +227,12 @@ void vQueueTest(void* pvParameters){
 		if(DDChannel_Create != NULL){
 			printf("item in Create Queue, resetting \n");
 			xQueueReset(DDChannel_Create);
+
 		}
 		if(DDChannel_Delete != NULL){
 			printf("item in Delete Queue, resetting \n");
 			xQueueReset(DDChannel_Delete);
+
 		}
 		vTaskDelay(100);
 	}
