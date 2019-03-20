@@ -85,20 +85,20 @@ DD_Status_t 	DD_TaskDelete(TaskHandle_t xTask)
 	}
 
 	//Deletes the task according to the task handle in the passed in struct
-	vTaskDelete(xTask);
-	printf("Task Deleted \n");
+	//vTaskDelete(NULL);
+	//printf("Task Deleted \n");
 
 	/*Send a message to the scheduler containing the task struct
 	 *Scheduler will check to see if the queue is empty, if not receive message, do its thing then empty queue
 	 */
 	xQueueSend(DDChannel_Delete,xTask,10);
-	printf("Message sent to scheduler \n");
+	printf("Message sent to scheduler for task deletion \n");
 
 	//If queue is not empty, message not received and wait before destroying channel
 	while(uxQueueSpacesAvailable(DDChannel_Delete) == 0);
 	vQueueDelete(DDChannel_Delete);
 	//Task Deletion success
-	printf("DD_TaskDelete Success \n");
+	printf("DD_TaskDelete Message Success \n");
 
 	return DD_Success;
 }
