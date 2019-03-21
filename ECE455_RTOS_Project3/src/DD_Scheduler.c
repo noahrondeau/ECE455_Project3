@@ -101,9 +101,11 @@ DD_Status_t 	DD_TaskDelete(TaskHandle_t xTask)
 	while(uxQueueSpacesAvailable(DDChannel_Delete) == 0);
 	vQueueDelete(DDChannel_Delete);
 	DDChannel_Delete = NULL;
+
 	//Task Deletion success
 	printf("DD_TaskDelete Message Success \n");
-
+	printf("Task is being Deleted \n");
+	vTaskDelete(xTask);
 	return DD_Success;
 }
 

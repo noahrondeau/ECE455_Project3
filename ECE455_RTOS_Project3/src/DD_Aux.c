@@ -16,8 +16,7 @@ void vPeriodicTask(void *pvParamaters){
 		//Might have to use pvParams with that being the struct for the particular task?
 		TaskHandle_t self = xTaskGetCurrentTaskHandle();
 		DD_TaskDelete(self);
-		printf("Task is being Deleted \n");
-		vTaskDelete(self);
+
 	}
 
 
