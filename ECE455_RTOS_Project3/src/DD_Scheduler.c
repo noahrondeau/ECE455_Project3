@@ -55,7 +55,7 @@ DD_Status_t	DD_TaskCreate(DD_TaskHandle_t ddTask)
 	}
 
 	//created the task passed in through params
-	xTaskCreate(ddTask->xFunction,ddTask->sTaskName,ddTask->uStackSize,NULL,ddTask->xPriority,&(ddTask->xTask));
+	xTaskCreate(ddTask->xFunction,ddTask->sTaskName,ddTask->uStackSize,(void*)ddTask,ddTask->xPriority,&(ddTask->xTask));
 	printf("Task created\n");
 	/*send a message to the scheduler containing the task
 	 * Scheduler will check to see if the queue is empty, if not receive message, do its thing then empty queue
@@ -75,7 +75,7 @@ DD_Status_t	DD_TaskCreate(DD_TaskHandle_t ddTask)
 	return DD_Success;
 }
 
-DD_Status_t 	DD_TaskDelete(TaskHandle_t xTask)
+DD_Status_t 	DD_TaskDelete(DD_TaskHandle_t ddTask)
 {
 	//Opens the Queue by creating it
 	DDChannel_Delete = xQueueCreate(1,sizeof(TaskHandle_t));
@@ -94,7 +94,7 @@ DD_Status_t 	DD_TaskDelete(TaskHandle_t xTask)
 	/*Send a message to the scheduler containing the task struct
 	 *Scheduler will check to see if the queue is empty, if not receive message, do its thing then empty queue
 	 */
-	xQueueSend(DDChannel_Delete,xTask,10);
+	xQueueSend(DDChannel_Delete,ddTask->xTask,10);
 	printf("Message sent to scheduler for task deletion \n");
 
 	//If queue is not empty, message not received and wait before destroying channel
@@ -105,7 +105,8 @@ DD_Status_t 	DD_TaskDelete(TaskHandle_t xTask)
 	//Task Deletion success
 	printf("DD_TaskDelete Message Success \n");
 	printf("Task is being Deleted \n");
-	vTaskDelete(xTask);
+	DD_TaskDealloc(ddTask);
+	vTaskDelete(NULL);
 	return DD_Success;
 }
 

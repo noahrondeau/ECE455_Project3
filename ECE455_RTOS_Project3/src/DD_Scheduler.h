@@ -20,7 +20,7 @@ QueueHandle_t DDChannel_Delete;
 /* ------------- Public Functions --------------- */
 
 DD_Status_t		DD_TaskCreate(DD_TaskHandle_t ddTask);
-DD_Status_t 	DD_TaskDelete(TaskHandle_t xTask); // could take a DD_TaskHandle_t obtained with container_of
+DD_Status_t 	DD_TaskDelete(DD_TaskHandle_t ddTask); // could take a DD_TaskHandle_t obtained with container_of
 DD_Status_t		DD_ReturnActiveList(DD_TaskListHandle_t retActiveList);
 DD_Status_t		DD_ReturnOverdueList(DD_TaskListHandle_t retOverdueList);
 
