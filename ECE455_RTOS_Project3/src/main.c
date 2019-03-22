@@ -224,6 +224,7 @@ void vDummyTask(void* pvParameters)
 void vQueueTest(void* pvParameters){
 	while(1)
 	{
+		/*
 		if(DDChannel_Create != NULL){
 			printf("item in Create Queue, resetting \n");
 			xQueueReset(DDChannel_Create);
@@ -233,7 +234,7 @@ void vQueueTest(void* pvParameters){
 			printf("item in Delete Queue, resetting \n");
 			xQueueReset(DDChannel_Delete);
 
-		}
+		}*/
 		vTaskDelay(100);
 	}
 }

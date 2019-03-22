@@ -12,12 +12,15 @@
 #include "DD_Task.h"
 #include "DD_Status.h"
 
-/* ------------   Public Handles   -------------- */
-QueueHandle_t DDChannel_Create;
-QueueHandle_t DDChannel_Delete;
+
+/* ------------- Definitions ------------------- */
+
+#define SCHEDULER_MAX_USER_TASKS_NUM		(20)
 
 
 /* ------------- Public Functions --------------- */
+
+DD_Status_t		DD_SchedulerStart(void);
 
 DD_Status_t		DD_TaskCreate(DD_TaskHandle_t ddTask);
 DD_Status_t 	DD_TaskDelete(DD_TaskHandle_t ddTask); // could take a DD_TaskHandle_t obtained with container_of
