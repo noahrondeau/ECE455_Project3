@@ -15,6 +15,7 @@ static DD_TaskList_t xOverdueTaskList;
 
 QueueHandle_t DDChannel_Create = NULL; //not sure if this is the appropriate place to put this
 QueueHandle_t DDChannel_Delete = NULL;
+static QueueHandle_t xMessageQueue;
 
 
 /* ---------------- PUBLIC INTERFACE ------------------ */
@@ -110,15 +111,24 @@ DD_Status_t 	DD_TaskDelete(DD_TaskHandle_t ddTask)
 	return DD_Success;
 }
 
-DD_Status_t		DD_ReturnActiveList(DD_TaskListHandle_t retActiveList)
+DD_Status_t		DD_ReturnActiveList(void)
 {
 	//TODO : return either a copy of the list or a pointer to it
+	DD_Message_t xActiveRequest = {
+		DD_Message_GetActiveList,
+		xTaskGetCurrentTaskHandle(),
+		NULL,
+	};
+
+
 	return DD_None;
 }
 
-DD_Status_t		DD_ReturnOverdueList(DD_TaskListHandle_t retOverdueList)
+DD_Status_t		DD_ReturnOverdueList(void)
 {
 	//TODO : return either a copy of the list or a pointer to it
+
+
 	return DD_None;
 }
 
