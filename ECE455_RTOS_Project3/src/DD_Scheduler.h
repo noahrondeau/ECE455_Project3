@@ -25,6 +25,7 @@ DD_Status_t		DD_TaskCreate(DD_TaskHandle_t ddTask);
 DD_Status_t 	DD_TaskDelete(DD_TaskHandle_t ddTask); // could take a DD_TaskHandle_t obtained with container_of
 DD_Status_t		DD_ReturnActiveList(void);
 DD_Status_t		DD_ReturnOverdueList(void);
+DD_Status_t		DD_Queue_Init(void);
 
 
 

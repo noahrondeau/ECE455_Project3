@@ -15,6 +15,7 @@ typedef enum DD_Status_t
 	DD_Failure,
 	DD_Queue_Open_Fail,
 	DD_Queue_Close_Fail,
+	DD_Message_Send_Fail,
 	DD_Task_Alloc_Fail_xTask_Not_Created,
 	DD_Task_Dealloc_Fail_xTask_Not_Null,
 	DD_Task_Dealloc_Fail_pNext_Not_Null,

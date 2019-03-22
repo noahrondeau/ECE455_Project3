@@ -15,7 +15,9 @@ static DD_TaskList_t xOverdueTaskList;
 
 QueueHandle_t DDChannel_Create = NULL; //not sure if this is the appropriate place to put this
 QueueHandle_t DDChannel_Delete = NULL;
+
 static QueueHandle_t xMessageQueue;
+static QueueHandle_t xMonitorQueue;
 
 
 /* ---------------- PUBLIC INTERFACE ------------------ */
@@ -111,6 +113,16 @@ DD_Status_t 	DD_TaskDelete(DD_TaskHandle_t ddTask)
 	return DD_Success;
 }
 
+DD_Status_t		DD_Queue_Init(void){
+
+	xMonitorQueue = xQueueCreate(1,sizeof( DD_Message_t));
+	xMessageQueue = xQueueCreate(1,sizeof( DD_Message_t));
+
+	if(xMonitorQueue == NULL || xMessageQueue == NULL) return DD_Queue_Open_Fail;
+
+	return DD_Success;
+}
+
 DD_Status_t		DD_ReturnActiveList(void)
 {
 	//TODO : return either a copy of the list or a pointer to it
@@ -120,16 +132,58 @@ DD_Status_t		DD_ReturnActiveList(void)
 		NULL,
 	};
 
+	 if( xMessageQueue != 0 )
+	    {
+	        if( xQueueSend( xMessageQueue,
+	                       ( void * ) &xActiveRequest,
+	                       ( TickType_t ) 10 ) != pdPASS )
+	        {
+	            return DD_Message_Send_Fail;
+	        }
+	    }
 
-	return DD_None;
+	 if( xMonitorQueue != 0 )
+	    {
+	        if( xQueueReceive( xMonitorQueue, &xActiveRequest, ( TickType_t ) 10 ) )
+	        {
+	            // pcRxedMessage now points to the struct AMessage variable posted
+	            // by vATask.
+	        }
+	    }
+
+
+	return DD_Success;
 }
 
 DD_Status_t		DD_ReturnOverdueList(void)
 {
-	//TODO : return either a copy of the list or a pointer to it
+	DD_Message_t xOverdueRequest = {
+		DD_Message_GetOverdueList,
+		xTaskGetCurrentTaskHandle(),
+		NULL,
+	};
+
+	 if( xMessageQueue != 0 )
+	    {
+	        if( xQueueSend( xMessageQueue,
+	                       ( void * ) &xOverdueRequest,
+	                       ( TickType_t ) 10 ) != pdPASS )
+	        {
+	            return DD_Message_Send_Fail;
+	        }
+	    }
+
+	 if( xMonitorQueue != 0 )
+	    {
+	        if( xQueueReceive( xMonitorQueue, &xOverdueRequest, ( TickType_t ) 10 ) )
+	        {
+	            // pcRxedMessage now points to the struct AMessage variable posted
+	            // by vATask.
+	        }
+	    }
 
 
-	return DD_None;
+	return DD_Success;
 }
 
 

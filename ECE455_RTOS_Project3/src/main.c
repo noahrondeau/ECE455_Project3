@@ -167,6 +167,9 @@ int main(void)
 {
 	prvSetupHardware();
 
+	//Testing Queues Initialize for get list retrieval
+
+
 	/* Start the tasks and timer running. */
 	xTaskCreate(vDummyTask, "Dummy", configMINIMAL_STACK_SIZE, NULL, 2, &xDummyTask);
 	xTaskCreate(vMonitorTask, "Monitor", configMINIMAL_STACK_SIZE, NULL, 1, NULL);
