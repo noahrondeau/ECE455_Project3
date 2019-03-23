@@ -31,7 +31,7 @@ static DD_Status_t DD_SchedulerInit()
 
 	xMessageQueue = xQueueCreate(SCHEDULER_MAX_USER_TASKS_NUM, sizeof(DD_Message_t));
 	vQueueAddToRegistry(xMessageQueue,"Message Queue");
-	//xTaskCreate(SCHEDULER TASK);
+	xTaskCreate(DD_SchedulerTaskFunction, "DD_Scheduler", configMINIMAL_STACK_SIZE, NULL, DD_TASK_PRIORITY_SCHEDULER, NULL);
 
 	if ( xMessageQueue == NULL)
 		return DD_Queue_Open_Fail;
@@ -64,7 +64,12 @@ void DD_SchedulerTaskFunction( void* pvParameters )
 				// TODO:	run scheduling algorithms
 				//			insert item and change priorities
 				//			move overdue stuff
-				// Notify the
+				// Notify the message sender its message is being processed
+				DEBUG_ONLY(
+						printf("DD_Scheduler: received create message for task %s\n",
+								((DD_TaskHandle_t)(xReceivedMessage.data))->sTaskName)
+				);
+
 				xTaskNotifyGive(xReceivedMessage.sender);
 			}
 			break;
@@ -74,6 +79,11 @@ void DD_SchedulerTaskFunction( void* pvParameters )
 				// TODO:	run scheduling algorithms
 				//			remove item from list and change priorities
 				//			move overdue stuff
+				DEBUG_ONLY(
+						printf("DD_Scheduler: received delete message for task %s\n",
+								((DD_TaskHandle_t)(xReceivedMessage.data))->sTaskName)
+				);
+
 				xTaskNotifyGive(xReceivedMessage.sender);
 			}
 			break;
@@ -140,6 +150,10 @@ DD_Status_t DD_SchedulerStart()
 
 DD_Status_t	DD_TaskCreate(DD_TaskHandle_t ddTask)
 {
+
+	TaskHandle_t xCallingTaskHandle = xTaskGetCurrentTaskHandle();
+	char* sCallingTaskName = pcTaskGetName(xCallingTaskHandle);
+
 	// Get the current tick to set the absolute deadline
 	ddTask->xCreationTime = xTaskGetTickCount();
 	ddTask->xAbsDeadline = ddTask->xCreationTime + ddTask->xRelDeadline;
@@ -152,8 +166,6 @@ DD_Status_t	DD_TaskCreate(DD_TaskHandle_t ddTask)
 				ddTask->xPriority,
 				&(ddTask->xTask));
 
-	printf("Task created\n");
-
 	// Send message to the scheduler process, block forever if the queue is full
 
 	DD_Message_t message = {
@@ -162,20 +174,18 @@ DD_Status_t	DD_TaskCreate(DD_TaskHandle_t ddTask)
 			.data = (void*)ddTask,
 	};
 
+	DEBUG_ONLY(printf("%s (%s):\tSending TaskCreate message to DD_Scheduler\n", sCallingTaskName, __func__));
 	xQueueSend(xMessageQueue, (void*)&message, portMAX_DELAY);
-
-	printf("Message sent to scheduler\n");
 
 	// Wait for task notification from scheduler
 	ulTaskNotifyTake( pdTRUE, portMAX_DELAY);
+	DEBUG_ONLY(printf("%s (%s):\tReceived TaskCreate ACK from DD_Scheduler\n", sCallingTaskName, __func__));
 
 	/* NOTE: there really should really be some checks to make sure the operation was successful
 	 * we can do that later
 	 */
 
 	//Task Creation success
-	printf("DD_TaskCreate Success\n");
-
 	return DD_Success;
 }
 
@@ -186,17 +196,21 @@ DD_Status_t 	DD_TaskDelete(DD_TaskHandle_t ddTask)
 	 *Scheduler will check to see if the queue is empty, if not receive message, do its thing then empty queue
 	 */
 
+	TaskHandle_t xCallingTaskHandle = xTaskGetCurrentTaskHandle();
+	char* sCallingTaskName = pcTaskGetName(xCallingTaskHandle);
+
 	DD_Message_t message = {
 		.msg = DD_Message_TaskDelete,
-		.sender = xTaskGetCurrentTaskHandle(),
+		.sender = xCallingTaskHandle,
 		.data = (void*)ddTask,
 	};
 
+	DEBUG_ONLY(printf("%s (%s):\tSending TaskDelete message to scheduler\n", sCallingTaskName, __func__));
 	xQueueSend(xMessageQueue, (void*)&message, portMAX_DELAY);
-	printf("Message sent to scheduler for task deletion \n");
 
 	// wait for notification that the operation is finished
 	ulTaskNotifyTake( pdTRUE, portMAX_DELAY );
+	DEBUG_ONLY(printf("%s (%s):\tReceived TaskDelete ACK from DD_Scheduler\n", sCallingTaskName, __func__));
 
 	// received notification, it is safe to deallocate the task handle
 	// note that deallocating the DD_TaskHandle_t does not deallocate the TaskHandle_t location
@@ -204,7 +218,7 @@ DD_Status_t 	DD_TaskDelete(DD_TaskHandle_t ddTask)
 
 	if ( DD_TaskDealloc(ddTask) != DD_Success )
 	{
-		printf("Task pointers to list not NULL!\n");
+		DEBUG_ONLY(printf("%s (%s): Task pointers to list not NULL!\n", sCallingTaskName, __func__));
 		// do it again
 		// this is NOT the optimum solution, its just t prevent overflow
 		// while we debug any reason that might lead to this condition

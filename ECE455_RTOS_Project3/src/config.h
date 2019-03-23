@@ -23,7 +23,18 @@
 #include "../FreeRTOS_Source/include/task.h"
 #include "../FreeRTOS_Source/include/timers.h"
 
-/* --------------- USEFUL DEFINES --------------------*/
+/* --------------- BUILD CONFIGS ----------------------*/
+
+#define ENABLE										(1)
+#define DISABLE										(0)
+#define MODE_ENABLED(__m__)			((__m__) == ENABLE)
+#define MODE_DISABLED(__m__)		((__m__) == DISABLE)
+
+
+#define DEBUG_MODE								(ENABLE)
+
+
+/* --------------- USEFUL TYPEDEFS --------------------*/
 
 typedef		uint8_t		u8;
 typedef		uint16_t	u16;
@@ -32,4 +43,20 @@ typedef		int8_t		i8;
 typedef		int16_t		i16;
 typedef		int32_t		i32;
 
+/* --------------- USEFUL DEFINES --------------------*/
+
+#if MODE_ENABLED(DEBUG_MODE)
+	#define DEBUG_ONLY(__cmd__)		do{ __cmd__; }while(0)
+#else
+	#define DEBUG_ONLY(__cmd__)
+#endif
+
 #endif /* CONFIG_H_ */
+
+
+
+
+
+
+
+
