@@ -34,14 +34,14 @@ DD_TaskHandle_t DD_TaskAlloc()
 // deallocates a DD_TaskHandle_t pointer
 // precondition:
 //		ddTask was allocated using DD_TaskAlloc()
-//		TaskHandle_t already independently deallocated
+//		TaskHandle_t already independently deallocated !!!!!!!!!!!!!! NOT ACTUALLY SURE THIS MATTERS
 // 		by calling vTaskDelete on the internal ddTask->xTask
 //		The next and prev pointers have been properly handled and set to null
 DD_Status_t		DD_TaskDealloc(DD_TaskHandle_t ddTask)
 {
 	// xTask needs to be already null and properly deallocated: return error otherwise
-	if (ddTask->xTask != NULL)
-		return DD_Task_Dealloc_Fail_xTask_Not_Null;
+	//if (ddTask->xTask != NULL)
+		//return DD_Task_Dealloc_Fail_xTask_Not_Null;
 
 	if (ddTask->pNext != NULL)
 		return DD_Task_Dealloc_Fail_pNext_Not_Null;

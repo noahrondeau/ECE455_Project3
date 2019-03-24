@@ -150,13 +150,16 @@ functionality.
 /* Application Includes */
 #include "config.h"
 #include "DD_Scheduler.h"
+#include "SafePrint.h"
 #include "DD_Aux.h"
 
 
 static void prvSetupHardware( void );
-void vDummyTask(void* pvParameters);
+
+
+void vTestTaskFunction(void* pvParameters);
+void vGeneratorTaskFunction( void* pvParameters);
 void vMonitorTask(void* pvParameters);
-void vQueueTest(void* pvParameters);
 
 TaskHandle_t xQueueTest;
 TaskHandle_t xDummyTask;
@@ -166,45 +169,18 @@ TaskHandle_t xDummyTask;
 int main(void)
 {
 	prvSetupHardware();
+	SafePrintInit();
 
 	//Testing Queues Initialize for get list retrieval
 
 
 	/* Start the tasks and timer running. */
-	xTaskCreate(vDummyTask, "Dummy", configMINIMAL_STACK_SIZE, NULL, 2, &xDummyTask);
-	xTaskCreate(vMonitorTask, "Monitor", configMINIMAL_STACK_SIZE, NULL, 1, NULL);
+	xTaskCreate(vGeneratorTaskFunction, "GeneratorTask", configMINIMAL_STACK_SIZE, NULL, DD_TASK_GEN_PRIORITY_MIN, NULL);
+	DD_SchedulerStart(); // starts the DD_Scheduler and the FreeRTOS scheduler
 
-	xTaskCreate(vQueueTest,"Queue Read Test", configMINIMAL_STACK_SIZE, NULL, 3, &xQueueTest);
-	xTaskCreate(vPeriodicGenerator,"Generator Test", configMINIMAL_STACK_SIZE, NULL, 1, &xPeriodicGenerator);
-
-	if (xDummyTask != NULL)
-	{
-		printf("DummyTask successfully created!\n");
-		fflush(stdout);
-	}
-	else
-	{
-		printf("DummyTask FAILED to create!\n");
-		fflush(stdout);
-	}
-
-	unsigned int taskCount = uxTaskGetNumberOfTasks();
-	printf("Number of tasks at startup is: %d\n", taskCount);
-	fflush(stdout);
-	vTaskStartScheduler();
 
 	return 0;
 }
-
-
-/*-----------------------------------------------------------*/
-
-
-/*-----------------------------------------------------------*/
-
-
-/*-----------------------------------------------------------*/
-
 
 
 /*-----------------------------------------------------------*/
@@ -214,30 +190,31 @@ int main(void)
 
 /*-----------------------------------------------------------*/
 //TEST TASKS
-void vDummyTask(void* pvParameters)
+void vTestTaskFunction(void* pvParameters)
 {
+	// get self item from params
+	DD_TaskHandle_t ddSelf = (DD_TaskHandle_t)pvParameters;
+
 	while(1)
 	{
-		printf("Running Dummy Task once\n");
-		fflush(stdout);
-		vTaskDelay(1000);
+		vTaskDelay(2500); // delay 5s to see effect
+		DebugSafePrint("Running the task then deleting myself!\n", ddSelf->sTaskName);
+		vTaskDelay(2500);
+		DD_TaskDelete(ddSelf);
 	}
 }
 
-void vQueueTest(void* pvParameters){
+void vGeneratorTaskFunction( void* pvParameters)
+{
 	while(1)
 	{
-		if(DDChannel_Create != NULL){
-			printf("item in Create Queue, resetting \n");
-			xQueueReset(DDChannel_Create);
+		DD_TaskHandle_t ddTestTask = DD_TaskAlloc();
+		ddTestTask->sTaskName = "TestTask";
+		ddTestTask->xFunction = vTestTaskFunction;
+		ddTestTask->xRelDeadline = 1000;
 
-		}
-		if(DDChannel_Delete != NULL){
-			printf("item in Delete Queue, resetting \n");
-			xQueueReset(DDChannel_Delete);
-
-		}
-		vTaskDelay(100);
+		DD_TaskCreate(ddTestTask);
+		vTaskDelay(30000);// wait another 25 s before running again
 	}
 }
 
@@ -249,8 +226,7 @@ void vMonitorTask(void* pvParameters)
 	bool deleted = false;
 
 	taskCount = uxTaskGetNumberOfTasks();
-	printf("Number of tasks at FIRST mock run is: %d\n", taskCount);
-	fflush(stdout);
+	DebugSafePrint("Number of tasks at FIRST mock run is: %d\n", taskCount);
 
 	while(1)
 	{
@@ -261,8 +237,7 @@ void vMonitorTask(void* pvParameters)
 		}
 
 		taskCount = uxTaskGetNumberOfTasks();
-		printf("Number of tasks at mock run is: %d\n", taskCount);
-		fflush(stdout);
+		DebugSafePrint("Number of tasks at mock run is: %d\n", taskCount);
 		vTaskDelay(5000);
 	}
 }
