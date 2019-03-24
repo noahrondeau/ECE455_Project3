@@ -32,6 +32,7 @@
 
 
 #define DEBUG_MODE								(ENABLE)
+#define MODE_USE_SAFE_PRINT						(ENABLE)
 
 
 /* --------------- USEFUL TYPEDEFS --------------------*/

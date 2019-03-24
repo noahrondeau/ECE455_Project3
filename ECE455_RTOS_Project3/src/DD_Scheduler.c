@@ -8,6 +8,7 @@
 
 #include "DD_Scheduler.h"
 #include "DD_Message.h"
+#include "SafePrint.h"
 
 /* ---------------- PRIVATE DEFINTIONS ----------------- */
 
@@ -65,10 +66,7 @@ void DD_SchedulerTaskFunction( void* pvParameters )
 				//			insert item and change priorities
 				//			move overdue stuff
 				// Notify the message sender its message is being processed
-				DEBUG_ONLY(
-						printf("DD_Scheduler: received create message for task %s\n",
-								((DD_TaskHandle_t)(xReceivedMessage.data))->sTaskName)
-				);
+				DebugSafePrint("Received create message for task %s\n", ((DD_TaskHandle_t)(xReceivedMessage.data))->sTaskName);
 
 				xTaskNotifyGive(xReceivedMessage.sender);
 			}
@@ -79,10 +77,7 @@ void DD_SchedulerTaskFunction( void* pvParameters )
 				// TODO:	run scheduling algorithms
 				//			remove item from list and change priorities
 				//			move overdue stuff
-				DEBUG_ONLY(
-						printf("DD_Scheduler: received delete message for task %s\n",
-								((DD_TaskHandle_t)(xReceivedMessage.data))->sTaskName)
-				);
+				DebugSafePrint("Received delete message for task %s\n", ((DD_TaskHandle_t)(xReceivedMessage.data))->sTaskName);
 
 				xTaskNotifyGive(xReceivedMessage.sender);
 			}
@@ -151,9 +146,6 @@ DD_Status_t DD_SchedulerStart()
 DD_Status_t	DD_TaskCreate(DD_TaskHandle_t ddTask)
 {
 
-	TaskHandle_t xCallingTaskHandle = xTaskGetCurrentTaskHandle();
-	char* sCallingTaskName = pcTaskGetName(xCallingTaskHandle);
-
 	// Get the current tick to set the absolute deadline
 	ddTask->xCreationTime = xTaskGetTickCount();
 	ddTask->xAbsDeadline = ddTask->xCreationTime + ddTask->xRelDeadline;
@@ -174,12 +166,12 @@ DD_Status_t	DD_TaskCreate(DD_TaskHandle_t ddTask)
 			.data = (void*)ddTask,
 	};
 
-	DEBUG_ONLY(printf("%s (%s):\tSending TaskCreate message to DD_Scheduler\n", sCallingTaskName, __func__));
+	DebugSafePrint("Sending TaskCreate message to DD_Scheduler\n");
 	xQueueSend(xMessageQueue, (void*)&message, portMAX_DELAY);
 
 	// Wait for task notification from scheduler
 	ulTaskNotifyTake( pdTRUE, portMAX_DELAY);
-	DEBUG_ONLY(printf("%s (%s):\tReceived TaskCreate ACK from DD_Scheduler\n", sCallingTaskName, __func__));
+	DebugSafePrint("Received TaskCreate ACK from DD_Scheduler\n");
 
 	/* NOTE: there really should really be some checks to make sure the operation was successful
 	 * we can do that later
@@ -196,21 +188,18 @@ DD_Status_t 	DD_TaskDelete(DD_TaskHandle_t ddTask)
 	 *Scheduler will check to see if the queue is empty, if not receive message, do its thing then empty queue
 	 */
 
-	TaskHandle_t xCallingTaskHandle = xTaskGetCurrentTaskHandle();
-	char* sCallingTaskName = pcTaskGetName(xCallingTaskHandle);
-
 	DD_Message_t message = {
 		.msg = DD_Message_TaskDelete,
-		.sender = xCallingTaskHandle,
+		.sender = xTaskGetCurrentTaskHandle(),
 		.data = (void*)ddTask,
 	};
 
-	DEBUG_ONLY(printf("%s (%s):\tSending TaskDelete message to scheduler\n", sCallingTaskName, __func__));
+	DebugSafePrint("Sending TaskDelete message to scheduler\n");
 	xQueueSend(xMessageQueue, (void*)&message, portMAX_DELAY);
 
 	// wait for notification that the operation is finished
 	ulTaskNotifyTake( pdTRUE, portMAX_DELAY );
-	DEBUG_ONLY(printf("%s (%s):\tReceived TaskDelete ACK from DD_Scheduler\n", sCallingTaskName, __func__));
+	DebugSafePrint("Received TaskDelete ACK from DD_Scheduler\n");
 
 	// received notification, it is safe to deallocate the task handle
 	// note that deallocating the DD_TaskHandle_t does not deallocate the TaskHandle_t location
@@ -218,7 +207,7 @@ DD_Status_t 	DD_TaskDelete(DD_TaskHandle_t ddTask)
 
 	if ( DD_TaskDealloc(ddTask) != DD_Success )
 	{
-		DEBUG_ONLY(printf("%s (%s): Task pointers to list not NULL!\n", sCallingTaskName, __func__));
+		DebugSafePrint("Task pointers to list not NULL!\n");
 		// do it again
 		// this is NOT the optimum solution, its just t prevent overflow
 		// while we debug any reason that might lead to this condition

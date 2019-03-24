@@ -150,6 +150,7 @@ functionality.
 /* Application Includes */
 #include "config.h"
 #include "DD_Scheduler.h"
+#include "SafePrint.h"
 #include "DD_Aux.h"
 
 
@@ -168,6 +169,7 @@ TaskHandle_t xDummyTask;
 int main(void)
 {
 	prvSetupHardware();
+	SafePrintInit();
 
 	/* Start the tasks and timer running. */
 	xTaskCreate(vGeneratorTaskFunction, "GeneratorTask", configMINIMAL_STACK_SIZE, NULL, DD_TASK_GEN_PRIORITY_MIN, NULL);
@@ -193,7 +195,7 @@ void vTestTaskFunction(void* pvParameters)
 	while(1)
 	{
 		vTaskDelay(2500); // delay 5s to see effect
-		DEBUG_ONLY(printf("%s : Running the task then deleting myself!\n", ddSelf->sTaskName));
+		DebugSafePrint("Running the task then deleting myself!\n", ddSelf->sTaskName);
 		vTaskDelay(2500);
 		DD_TaskDelete(ddSelf);
 	}
@@ -221,8 +223,7 @@ void vMonitorTask(void* pvParameters)
 	bool deleted = false;
 
 	taskCount = uxTaskGetNumberOfTasks();
-	printf("Number of tasks at FIRST mock run is: %d\n", taskCount);
-	fflush(stdout);
+	DebugSafePrint("Number of tasks at FIRST mock run is: %d\n", taskCount);
 
 	while(1)
 	{
@@ -233,8 +234,7 @@ void vMonitorTask(void* pvParameters)
 		}
 
 		taskCount = uxTaskGetNumberOfTasks();
-		printf("Number of tasks at mock run is: %d\n", taskCount);
-		fflush(stdout);
+		DebugSafePrint("Number of tasks at mock run is: %d\n", taskCount);
 		vTaskDelay(5000);
 	}
 }
