@@ -117,6 +117,10 @@ void vMonitorTask(void* pvParameters)
 
 		taskCount = uxTaskGetNumberOfTasks();
 		DebugSafePrint("Number of tasks at mock run is: %d\n", taskCount);
+
+		DD_ReturnActiveList();
+		DD_ReturnOverdueList();
+
 		vTaskDelay(5000);
 	}
 }
@@ -276,7 +280,7 @@ DD_Status_t		DD_ReturnActiveList(void)
 	    {
 	        if( xQueueReceive( xMonitorQueue, &xActiveRequest, ( TickType_t ) 10 ) )
 	        {
-	        	SafePrint(true,"%s",(char*)xActiveRequest.data);
+	        	SafePrint(true,"Active Task List:\n%s",(char*)xActiveRequest.data);
 	        	vPortFree((char*)xActiveRequest.data);
 	        }
 	    }
@@ -307,7 +311,7 @@ DD_Status_t		DD_ReturnOverdueList(void)
 	    {
 	        if( xQueueReceive( xMonitorQueue, &xOverdueRequest, ( TickType_t ) 10 ) )
 	        {
-	        	SafePrint(true,"%s",(char*)xOverdueRequest.data);
+	        	SafePrint(true,"Overdue Task List:\n%s",(char*)xOverdueRequest.data);
 	        	vPortFree((char*)xOverdueRequest.data);
 	        }
 	    }
