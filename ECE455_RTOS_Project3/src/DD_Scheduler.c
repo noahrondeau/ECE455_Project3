@@ -146,8 +146,7 @@ DD_Status_t		DD_ReturnActiveList(void)
 	    {
 	        if( xQueueReceive( xMonitorQueue, &xActiveRequest, ( TickType_t ) 10 ) )
 	        {
-	        	char temp[sizeof((char*)xActiveRequest.data)];
-	        	sprintf(temp,"Active List:\n %s ",(char*)xActiveRequest.data);
+	        	printf("%s",(char*)xActiveRequest.data);
 	        	vPortFree((char*)xActiveRequest.data);
 	        }
 	    }
@@ -178,8 +177,7 @@ DD_Status_t		DD_ReturnOverdueList(void)
 	    {
 	        if( xQueueReceive( xMonitorQueue, &xOverdueRequest, ( TickType_t ) 10 ) )
 	        {
-	        	char temp[sizeof((char*)xOverdueRequest.data)];
-	        	sprintf(temp,"Active List:\n %s ",(char*)xOverdueRequest.data);
+	        	printf("%s",(char*)xOverdueRequest.data);
 	        	vPortFree((char*)xOverdueRequest.data);
 	        }
 	    }

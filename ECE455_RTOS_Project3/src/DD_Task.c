@@ -188,18 +188,36 @@ DD_Status_t	DD_TaskListConcatenate(DD_TaskListHandle_t list1, DD_TaskListHandle_
 
 char* DD_TaskListDataReturn(DD_TaskListHandle_t list)
 {
+
 	u32 size = DD_TaskListGetSize(list);
-	char* data = (char*)pvPortMalloc(size * sizeof(char));
+	int dynamicSize = 48 + (size+1)*(20+3+sizeof(TickType_t)+14);
+	char* data = (char*)pvPortMalloc(dynamicSize);
 
 	DD_TaskHandle_t pAux = list->pHead;
 
 	while(pAux != NULL)
 	{
-		char* temp;
-		char* temp1 = "\n";
-		temp = pAux->sTaskName;
-		strcat(temp,temp1);
-		strcat(data,temp);
+		char buffer[100];
+		char* temp1;
+		switch(pAux->xStatus)
+		{
+			case DD_TaskUninitialized:
+				temp1 = "Uninitialized";
+				break;
+			case DD_TaskActive:
+				temp1 = "Active";
+				break;
+			case DD_TaskOverdue:
+				temp1 = "Overdue";
+				break;
+		}
+		sprintf(buffer,
+				"Task: %s\tPriority: %d\tAbs Deadline: %u\tStatus: %s\n",
+				pAux->sTaskName,
+				(int)pAux->xPriority,
+				(unsigned int)pAux->xAbsDeadline,
+				temp1);
+		strcat(data,buffer);
 		pAux++;
 	}
 
