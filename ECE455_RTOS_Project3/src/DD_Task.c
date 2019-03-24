@@ -186,11 +186,10 @@ DD_Status_t	DD_TaskListConcatenate(DD_TaskListHandle_t list1, DD_TaskListHandle_
 	return DD_None;
 }
 
-DD_Status_t	DD_TaskListTraverse(DD_TaskListHandle_t list)
+char* DD_TaskListTraverse(DD_TaskListHandle_t list)
 {
 	u32 size = DD_TaskListGetSize(list);
-	char data[size];
-	pvPortMalloc(data[size]);
+	char* data = (char*)pvPortMalloc(size * sizeof(char));
 
 	DD_TaskHandle_t pAux = list->pHead;
 
@@ -205,6 +204,6 @@ DD_Status_t	DD_TaskListTraverse(DD_TaskListHandle_t list)
 	}
 
 
-	return DD_Success;
+	return data;
 }
 
