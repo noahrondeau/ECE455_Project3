@@ -15,12 +15,14 @@
 static DD_TaskList_t xActiveTaskList;
 static DD_TaskList_t xOverdueTaskList;
 static QueueHandle_t xMessageQueue;
+static QueueHandle_t xMonitorQueue;
 
 static DD_Status_t DD_SchedulerInit(void);
 static DD_Status_t DD_MonitorInit(void);
 DD_Status_t DD_SchedulerStart(void);
 
 void DD_SchedulerTaskFunction( void* pvParameters );
+void vMonitorTask(void* pvParameters);
 
 
 /* ---------------- PRIVATE FUNCTIONS ------------------ */
@@ -32,7 +34,7 @@ static DD_Status_t DD_SchedulerInit()
 
 	xMessageQueue = xQueueCreate(SCHEDULER_MAX_USER_TASKS_NUM, sizeof(DD_Message_t));
 	vQueueAddToRegistry(xMessageQueue,"Message Queue");
-	xTaskCreate(DD_SchedulerTaskFunction, "DD_Scheduler", configMINIMAL_STACK_SIZE, NULL, DD_TASK_PRIORITY_SCHEDULER, NULL);
+	xTaskCreate(DD_SchedulerTaskFunction, "DD_Scheduler", configMINIMAL_STACK_SIZE, NULL,DD_TASK_PRIOTITY_MONITOR, NULL);
 
 	if ( xMessageQueue == NULL)
 		return DD_Queue_Open_Fail;
@@ -44,7 +46,11 @@ static DD_Status_t DD_SchedulerInit()
 static DD_Status_t DD_MonitorInit()
 {
 	// TODO: create monitor task and configure anything necessary
-	// xTaskCreate(MONITOR TASK);
+	xMonitorQueue = xQueueCreate(1,sizeof( DD_Message_t));
+	if(xMonitorQueue == NULL) return DD_Queue_Open_Fail;
+	vQueueAddToRegistry(xMonitorQueue,"Monitor Queue");
+	xTaskCreate(vMonitorTask,"DD_Monitor",configMINIMAL_STACK_SIZE, NULL, DD_TASK_PRIORITY_SCHEDULER, NULL);
+
 	return DD_Success;
 }
 
@@ -99,8 +105,21 @@ void DD_SchedulerTaskFunction( void* pvParameters )
 	}
 }
 
-static QueueHandle_t xMessageQueue;
-static QueueHandle_t xMonitorQueue;
+void vMonitorTask(void* pvParameters)
+{
+	unsigned int taskCount = 0;
+	taskCount = uxTaskGetNumberOfTasks();
+	DebugSafePrint("Number of tasks at FIRST mock run is: %d\n", taskCount);
+
+
+	while(1)
+	{
+
+		taskCount = uxTaskGetNumberOfTasks();
+		DebugSafePrint("Number of tasks at mock run is: %d\n", taskCount);
+		vTaskDelay(5000);
+	}
+}
 
 
 /* ---------------- PUBLIC INTERFACE ------------------ */
@@ -257,7 +276,7 @@ DD_Status_t		DD_ReturnActiveList(void)
 	    {
 	        if( xQueueReceive( xMonitorQueue, &xActiveRequest, ( TickType_t ) 10 ) )
 	        {
-	        	printf("%s",(char*)xActiveRequest.data);
+	        	SafePrint(true,"%s",(char*)xActiveRequest.data);
 	        	vPortFree((char*)xActiveRequest.data);
 	        }
 	    }
@@ -288,7 +307,7 @@ DD_Status_t		DD_ReturnOverdueList(void)
 	    {
 	        if( xQueueReceive( xMonitorQueue, &xOverdueRequest, ( TickType_t ) 10 ) )
 	        {
-	        	printf("%s",(char*)xOverdueRequest.data);
+	        	SafePrint(true,"%s",(char*)xOverdueRequest.data);
 	        	vPortFree((char*)xOverdueRequest.data);
 	        }
 	    }

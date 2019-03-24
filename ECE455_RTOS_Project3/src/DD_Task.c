@@ -198,6 +198,7 @@ char* DD_TaskListDataReturn(DD_TaskListHandle_t list)
 	while(pAux != NULL)
 	{
 		char buffer[100];
+
 		char* temp1;
 		switch(pAux->xStatus)
 		{

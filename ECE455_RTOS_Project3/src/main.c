@@ -159,7 +159,6 @@ static void prvSetupHardware( void );
 
 void vTestTaskFunction(void* pvParameters);
 void vGeneratorTaskFunction( void* pvParameters);
-void vMonitorTask(void* pvParameters);
 
 TaskHandle_t xQueueTest;
 TaskHandle_t xDummyTask;
@@ -220,27 +219,7 @@ void vGeneratorTaskFunction( void* pvParameters)
 
 
 //PROJECT TASKS
-void vMonitorTask(void* pvParameters)
-{
-	unsigned int taskCount = 0;
-	bool deleted = false;
 
-	taskCount = uxTaskGetNumberOfTasks();
-	DebugSafePrint("Number of tasks at FIRST mock run is: %d\n", taskCount);
-
-	while(1)
-	{
-		if (deleted == false )
-		{
-			vTaskDelete(xDummyTask);
-			deleted = true;
-		}
-
-		taskCount = uxTaskGetNumberOfTasks();
-		DebugSafePrint("Number of tasks at mock run is: %d\n", taskCount);
-		vTaskDelay(5000);
-	}
-}
 
 
 /*-----------------------------------------------------------*/
