@@ -72,7 +72,7 @@ DD_Status_t				DD_TaskListInsertByDeadline(DD_TaskListHandle_t list, DD_TaskHand
 DD_Status_t				DD_TaskListRemoveByHandle(DD_TaskListHandle_t list, DD_TaskHandle_t ddTask);
 DD_TaskList_t			DD_TaskListRemoveOverdue(DD_TaskListHandle_t list, TickType_t currentTime);
 DD_Status_t				DD_TaskListConcatenate(DD_TaskListHandle_t list1, DD_TaskListHandle_t list2);
-char*					DD_TaskListTraverse(DD_TaskListHandle_t list);
+char*					DD_TaskListDataReturn(DD_TaskListHandle_t list);
 
 
 #endif /* DD_TASK_H_ */

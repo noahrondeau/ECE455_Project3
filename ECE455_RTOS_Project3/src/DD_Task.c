@@ -186,7 +186,7 @@ DD_Status_t	DD_TaskListConcatenate(DD_TaskListHandle_t list1, DD_TaskListHandle_
 	return DD_None;
 }
 
-char* DD_TaskListTraverse(DD_TaskListHandle_t list)
+char* DD_TaskListDataReturn(DD_TaskListHandle_t list)
 {
 	u32 size = DD_TaskListGetSize(list);
 	char* data = (char*)pvPortMalloc(size * sizeof(char));
