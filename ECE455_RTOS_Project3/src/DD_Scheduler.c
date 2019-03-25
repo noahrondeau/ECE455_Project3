@@ -92,12 +92,38 @@ void DD_SchedulerTaskFunction( void* pvParameters )
 			case DD_Message_GetActiveList:
 			{
 				// TODO: everything
+				DebugSafePrint("Received Active List request\n");
+
+				xReceivedMessage.data = DD_TaskListDataReturn(&xActiveTaskList);
+
+				 if( xMonitorQueue != 0 )
+				    {
+				        if( xQueueSend( xMonitorQueue,
+				                       ( void * ) &xReceivedMessage,
+				                       ( TickType_t ) 10 ) != pdPASS )
+				        {
+				        	DebugSafePrint("Message sent to MonitorTask failed");
+				        }
+				    }
+
 			}
 			break;
 
 			case DD_Message_GetOverdueList:
 			{
 				// TODO: everything
+
+				xReceivedMessage.data = DD_TaskListDataReturn(&xOverdueTaskList);
+
+				 if( xMonitorQueue != 0 )
+				    {
+				        if( xQueueSend( xMonitorQueue,
+				                       ( void * ) &xReceivedMessage,
+				                       ( TickType_t ) 10 ) != pdPASS )
+				        {
+				        	DebugSafePrint("Message sent to MonitorTask failed");
+				        }
+				    }
 			}
 			break;
 			}
