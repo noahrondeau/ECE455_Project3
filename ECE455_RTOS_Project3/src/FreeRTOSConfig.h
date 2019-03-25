@@ -105,8 +105,8 @@ extern uint32_t SystemCoreClock;
 #define configUSE_COUNTING_SEMAPHORES	1
 
 /* Priority selection configs */
-#define configMAX_PRIORITIES			( 0xFF )
-#define configUSE_PORT_OPTIMISED_TASK_SELECTION (0)
+#define configMAX_PRIORITIES			( 32 )
+#define configUSE_PORT_OPTIMISED_TASK_SELECTION (1)
 
 /* Run time and task stats gathering related definitions. */
 #define configGENERATE_RUN_TIME_STATS           0

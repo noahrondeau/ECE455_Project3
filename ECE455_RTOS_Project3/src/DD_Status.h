@@ -13,12 +13,14 @@ typedef enum DD_Status_t
 	DD_None,
 	DD_Success,
 	DD_Failure,
+	DD_Argument_Null,
 	DD_Queue_Open_Fail,
 	DD_Queue_Close_Fail,
 	DD_Task_Alloc_Fail_xTask_Not_Created,
 	DD_Task_Dealloc_Fail_xTask_Not_Null,
 	DD_Task_Dealloc_Fail_pNext_Not_Null,
 	DD_Task_Dealloc_Fail_pPrev_Not_Null,
+	DD_TaskList_TaskHandle_Not_Found,
 } DD_Status_t;
 
 #endif /* DD_STATUS_H_ */

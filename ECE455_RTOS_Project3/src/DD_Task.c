@@ -6,6 +6,7 @@
  */
 
 #include <DD_Task.h>
+#include "SafePrint.h"
 
 
 /*------------------- Task Functions ----------------*/
@@ -94,6 +95,10 @@ bool DD_TaskListIsEmpty(DD_TaskListHandle_t list)
 // traverse the list from the front, modifying deadlines until the insertion point is found
 DD_Status_t	DD_TaskListInsertByDeadline(DD_TaskListHandle_t list, DD_TaskHandle_t ddTask)
 {
+	DebugSafePrint("List Size before insertion: %d\n", list->uSize);
+
+	ddTask->xStatus = DD_TaskActive;
+
 	// case list is empty
 	if (DD_TaskListIsEmpty(list))
 	{
@@ -102,6 +107,7 @@ DD_Status_t	DD_TaskListInsertByDeadline(DD_TaskListHandle_t list, DD_TaskHandle_
 		list->uSize = 1;
 		ddTask->xPriority = DD_TASK_USER_PRIORITY(0);
 		vTaskPrioritySet(ddTask->xTask, ddTask->xPriority);
+		DebugSafePrint("List Size after insertion: %d\n", list->uSize);
 		return DD_Success;
 	}
 
@@ -132,7 +138,7 @@ DD_Status_t	DD_TaskListInsertByDeadline(DD_TaskListHandle_t list, DD_TaskHandle_
 			vTaskPrioritySet(ddTask->xTask, ddTask->xPriority);
 
 			(list->uSize)++;
-			return DD_Success; // early return from here
+			break; // early return from here
 
 		}
 		else
@@ -163,25 +169,182 @@ DD_Status_t	DD_TaskListInsertByDeadline(DD_TaskListHandle_t list, DD_TaskHandle_
 	}
 
 	(list->uSize)++;
+
+	DebugSafePrint("List Size after insertion: %d\n", list->uSize);
 	return DD_Success;
 }
 
 // traverse the list front the front, modifying deadlines until the removal point is found
 DD_Status_t	DD_TaskListRemoveByHandle(DD_TaskListHandle_t list, DD_TaskHandle_t ddTask)
 {
-	return DD_None;
-}
 
-// collect all overdue tasks into a temp list and return it (by value for the list struct)
-DD_TaskList_t DD_TaskListRemoveOverdue(DD_TaskListHandle_t list, TickType_t currentTime)
-{
-	DD_TaskList_t ret;
-	DD_TaskListInit(&ret);
-	return ret;
+	/* ----------- VERIFY ALL PRECONDITIONS ------------- */
+	// check that the arguments are not null
+	if (list == NULL || ddTask == NULL)
+	{
+		DebugSafePrint("Null Parameter\n");
+		return DD_Argument_Null;
+	}
+
+	// if the list is empty, just return
+	if (DD_TaskListIsEmpty(list))
+	{
+		DebugSafePrint("Task List is Empty\n");
+		return DD_TaskList_TaskHandle_Not_Found;
+	}
+
+
+
+	// check that task is actually part of the list
+
+	// auxiliary pointer for list traversal
+	DD_TaskHandle_t pAux = list->pHead;
+
+	// search for it in the list first to make sure we don't alter the list
+	while (pAux != NULL)
+	{
+		if (pAux == ddTask)
+			break;
+
+		pAux++;
+	}
+
+	// if we got to the end, then its not there
+	if (pAux == NULL)
+	{
+		DebugSafePrint("Task Handle not in list");
+		return DD_TaskList_TaskHandle_Not_Found;
+	}
+
+	/* ------------- REMOVE FROM LIST -------------------- */
+
+	DebugSafePrint("Task list size before removal: %d\n", list->uSize);
+
+	ddTask->xStatus = DD_TaskDeleted;
+
+	// Since we got here, the item is in the list
+	pAux = list->pHead;
+	// reduce the priority of all the items in front of it
+	while( pAux != ddTask )
+	{
+		pAux->xPriority = pAux->xPriority - 1; // reduce priority
+		vTaskPrioritySet(ddTask->xTask, ddTask->xPriority);
+
+		pAux++;
+	}
+
+	// pAux now points to the task to remove
+	// rearrange pointer relationships
+
+	// only item in list
+	if (DD_TaskListGetSize(list) == 1)
+	{
+		list->pHead = NULL;
+		list->pTail = NULL;
+		list->uSize = 0;
+
+		pAux->pNext = NULL;
+		pAux->pPrev = NULL;
+	}
+	// the head of a list with size > 1
+	else if (pAux == list->pHead)
+	{
+		list->pHead = pAux->pNext;
+		list->pHead->pPrev = NULL;
+
+		pAux->pNext = NULL;
+		pAux->pPrev = NULL;
+
+		list->uSize--;
+	}
+	else if (pAux == list->pTail)
+	{
+		list->pTail = pAux->pPrev;
+		list->pTail->pNext = NULL;
+
+		pAux->pNext = NULL;
+		pAux->pPrev = NULL;
+
+		list->uSize--;
+	}
+	else
+	{
+		pAux->pPrev->pNext = pAux->pNext;
+		pAux->pNext->pPrev = pAux->pPrev;
+
+		pAux->pNext = NULL;
+		pAux->pPrev = NULL;
+
+		list->uSize--;
+	}
+
+	DebugSafePrint("Active Task List size after removal: %d\n", list->uSize);
+	return DD_Success;
 }
 
 // append list2 to list1
 DD_Status_t	DD_TaskListConcatenate(DD_TaskListHandle_t list1, DD_TaskListHandle_t list2)
 {
-	return DD_None;
+	if (list1 == NULL || list2 == NULL)
+		return DD_Argument_Null;
+
+	list1->uSize += list2->uSize;
+
+	list1->pTail->pNext = list2->pHead;
+	list2->pHead->pPrev = list1->pTail;
+	list1->pTail = list2->pTail;
+
+	return DD_Success;
 }
+
+// collect all overdue tasks into a temp list and return it (by value for the list struct)
+DD_Status_t DD_TaskListRemoveOverdue(DD_TaskListHandle_t active, DD_TaskListHandle_t overdue, TickType_t currentTime)
+{
+	if (active == NULL || overdue == NULL)
+	{
+		DebugSafePrint("Null Parameter\n");
+		return DD_Argument_Null;
+	}
+
+	if (DD_TaskListIsEmpty(active))
+	{
+		DebugSafePrint("Active Task List is Empty\n");
+		return DD_Success;
+	}
+
+	DebugSafePrint("Active Task list size before removal: %d\n", active->uSize);
+
+	// tasklist struct to hold temp list of tasks
+	DD_TaskList_t temp;
+	DD_TaskListInit(&temp);
+
+	DD_TaskHandle_t pAux = active->pHead;
+
+	// all tasks that are overdue must be at the front of the active list
+	// since the list is sorted by deadline
+	while (pAux->xAbsDeadline < currentTime)
+	{
+		// if the task has a resource, then this is still safe
+		// since the idle task cleans up resources
+		vTaskSuspend(pAux->xTask);
+		vTaskDelete(pAux->xTask);
+		pAux->xStatus = DD_TaskOverdue;
+
+		temp.uSize++;
+		active->uSize--;
+		pAux++;
+	}
+
+	// pAux now points to the first task that is not overdue
+	temp.pTail = pAux->pPrev;
+	pAux->pPrev->pNext = NULL;
+	temp.pHead = active->pHead;
+	active->pHead = pAux;
+	pAux->pPrev = NULL;
+
+	DD_TaskListConcatenate(overdue, &temp);
+
+	DebugSafePrint("Active Task List size after removal: %d\n", active->uSize);
+	return DD_Success;
+}
+

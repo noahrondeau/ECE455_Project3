@@ -53,6 +53,8 @@ void DD_SchedulerTaskFunction( void* pvParameters )
 {
 	DD_Message_t xReceivedMessage;
 
+	TickType_t xTick = xTaskGetTickCount();
+
 	while (true)
 	{
 		// wait forever for the next message to arrive
@@ -67,8 +69,12 @@ void DD_SchedulerTaskFunction( void* pvParameters )
 				//			move overdue stuff
 				// Notify the message sender its message is being processed
 				DebugSafePrint("Received create message for task %s\n", ((DD_TaskHandle_t)(xReceivedMessage.data))->sTaskName);
-
+				//DD_TaskListRemoveOverdue(&xActiveTaskList, &xOverdueTaskList, xTick);
+				DD_TaskListInsertByDeadline(&xActiveTaskList, (DD_TaskHandle_t)(xReceivedMessage.data));
+				vTaskResume(((DD_TaskHandle_t)(xReceivedMessage.data))->xTask);
 				xTaskNotifyGive(xReceivedMessage.sender);
+
+
 			}
 			break;
 
@@ -78,7 +84,8 @@ void DD_SchedulerTaskFunction( void* pvParameters )
 				//			remove item from list and change priorities
 				//			move overdue stuff
 				DebugSafePrint("Received delete message for task %s\n", ((DD_TaskHandle_t)(xReceivedMessage.data))->sTaskName);
-
+				DD_TaskListRemoveByHandle(&xActiveTaskList, (DD_TaskHandle_t)(xReceivedMessage.data));
+				//DD_TaskListRemoveOverdue(&xActiveTaskList, &xOverdueTaskList, xTick);
 				xTaskNotifyGive(xReceivedMessage.sender);
 			}
 			break;
@@ -157,6 +164,15 @@ DD_Status_t	DD_TaskCreate(DD_TaskHandle_t ddTask)
 				(void*)ddTask, // passing in the DD_TaskHandle_t as pvParameters so task is aware of its own params
 				ddTask->xPriority,
 				&(ddTask->xTask));
+
+	if (ddTask->xTask == NULL)
+	{
+		DebugSafePrint("Failed to create task %s\n", ddTask->sTaskName);
+		return DD_Failure;
+	}
+
+	// suspend the task, it will be made ready by the scheduler again
+	vTaskSuspend(ddTask->xTask);
 
 	// Send message to the scheduler process, block forever if the queue is full
 
