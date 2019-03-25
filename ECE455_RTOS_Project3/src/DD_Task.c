@@ -167,7 +167,7 @@ DD_Status_t	DD_TaskListInsertByDeadline(DD_TaskListHandle_t list, DD_TaskHandle_
 				break;
 			}
 
-			pAux++; // no early return, want to keep iterating
+			pAux = pAux->pNext; // no early return, want to keep iterating
 					// or, if at end of list, then we just inserted,
 					// and we can safely fall out of the loop and return
 
@@ -212,7 +212,7 @@ DD_Status_t	DD_TaskListRemoveByHandle(DD_TaskListHandle_t list, DD_TaskHandle_t 
 		if (pAux == ddTask)
 			break;
 
-		pAux++;
+		pAux = pAux->pNext;
 	}
 
 	// if we got to the end, then its not there
@@ -236,7 +236,7 @@ DD_Status_t	DD_TaskListRemoveByHandle(DD_TaskListHandle_t list, DD_TaskHandle_t 
 		pAux->xPriority = pAux->xPriority - 1; // reduce priority
 		vTaskPrioritySet(ddTask->xTask, ddTask->xPriority);
 
-		pAux++;
+		pAux = pAux->pNext;
 	}
 
 	// pAux now points to the task to remove
@@ -328,17 +328,18 @@ DD_Status_t DD_TaskListRemoveOverdue(DD_TaskListHandle_t active, DD_TaskListHand
 
 	// all tasks that are overdue must be at the front of the active list
 	// since the list is sorted by deadline
-	while (pAux->xAbsDeadline < currentTime)
+	while (currentTime >= pAux->xAbsDeadline) // must be equal because its in ticks!
 	{
 		// if the task has a resource, then this is still safe
 		// since the idle task cleans up resources
+		DebugSafePrint("Task %s is overdue\n", pAux->sTaskName);
 		vTaskSuspend(pAux->xTask);
 		vTaskDelete(pAux->xTask);
 		pAux->xStatus = DD_TaskOverdue;
 
 		temp.uSize++;
 		active->uSize--;
-		pAux++;
+		pAux = pAux->pNext;
 	}
 
 	// pAux now points to the first task that is not overdue
