@@ -94,7 +94,7 @@ void DD_SchedulerTaskFunction( void* pvParameters )
 				// TODO: everything
 				DebugSafePrint("Received Active List request\n");
 
-				xReceivedMessage.data = DD_TaskListDataReturn(&xActiveTaskList);
+				xReceivedMessage.data = (void*)DD_TaskListDataReturn(&xActiveTaskList);
 
 				 if( xMonitorQueue != 0 )
 				    {
@@ -113,7 +113,7 @@ void DD_SchedulerTaskFunction( void* pvParameters )
 			{
 				// TODO: everything
 
-				xReceivedMessage.data = DD_TaskListDataReturn(&xOverdueTaskList);
+				xReceivedMessage.data = (void*)DD_TaskListDataReturn(&xOverdueTaskList);
 
 				 if( xMonitorQueue != 0 )
 				    {
@@ -306,8 +306,8 @@ DD_Status_t		DD_ReturnActiveList(void)
 	    {
 	        if( xQueueReceive( xMonitorQueue, &xActiveRequest, ( TickType_t ) 10 ) )
 	        {
-	        	SafePrint(true,"Active Task List:\n%s",(char*)xActiveRequest.data);
-	        	vPortFree((char*)xActiveRequest.data);
+	        	SafePrint(true,"Active Task List:\n%s\n",(char*)(xActiveRequest.data));
+	        	vPortFree((char*)(xActiveRequest.data));
 	        }
 	    }
 
@@ -337,8 +337,8 @@ DD_Status_t		DD_ReturnOverdueList(void)
 	    {
 	        if( xQueueReceive( xMonitorQueue, &xOverdueRequest, ( TickType_t ) 10 ) )
 	        {
-	        	SafePrint(true,"Overdue Task List:\n%s",(char*)xOverdueRequest.data);
-	        	vPortFree((char*)xOverdueRequest.data);
+	        	SafePrint(true,"Overdue Task List:\n%s\n",(char*)(xOverdueRequest.data));
+	        	vPortFree((char*)(xOverdueRequest.data));
 	        }
 	    }
 

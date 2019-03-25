@@ -159,6 +159,7 @@ static void prvSetupHardware( void );
 
 void vTestTaskFunction(void* pvParameters);
 void vGeneratorTaskFunction( void* pvParameters);
+void MockTaskListFunction(DD_TaskListHandle_t ActiveList,DD_TaskListHandle_t OverdueList);
 
 TaskHandle_t xQueueTest;
 TaskHandle_t xDummyTask;
@@ -169,9 +170,6 @@ int main(void)
 {
 	prvSetupHardware();
 	SafePrintInit();
-
-	//Testing Queues Initialize for get list retrieval
-
 
 	/* Start the tasks and timer running. */
 	xTaskCreate(vGeneratorTaskFunction, "GeneratorTask", configMINIMAL_STACK_SIZE, NULL, DD_TASK_GEN_PRIORITY_MIN, NULL);
@@ -214,6 +212,17 @@ void vGeneratorTaskFunction( void* pvParameters)
 
 		DD_TaskCreate(ddTestTask);
 		vTaskDelay(30000);// wait another 25 s before running again
+	}
+}
+
+void MockTaskListFunction(DD_TaskListHandle_t ActiveList,DD_TaskListHandle_t OverdueList)
+{
+	for(int i = 0;i<1;i++)
+	{
+		for(int j = 0; j<5;j++)
+		{
+
+		}
 	}
 }
 
