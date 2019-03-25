@@ -223,7 +223,7 @@ char* DD_TaskListDataReturn(DD_TaskListHandle_t list)
 		strcat(data,buffer);
 
 		hfDebug++;
-		pAux++;
+		pAux = pAux->pNext;
 	}
 
 
