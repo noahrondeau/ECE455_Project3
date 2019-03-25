@@ -65,10 +65,6 @@ void DD_SchedulerTaskFunction( void* pvParameters )
 			{
 			case DD_Message_TaskCreate:
 			{
-				// TODO:	run scheduling algorithms
-				//			insert item and change priorities
-				//			move overdue stuff
-				// Notify the message sender its message is being processed
 				DebugSafePrint("Received create message for task %s\n", ((DD_TaskHandle_t)(xReceivedMessage.data))->sTaskName);
 				DD_TaskListRemoveOverdue(&xActiveTaskList, &xOverdueTaskList, xTick);
 				DD_TaskListInsertByDeadline(&xActiveTaskList, (DD_TaskHandle_t)(xReceivedMessage.data));
@@ -79,15 +75,19 @@ void DD_SchedulerTaskFunction( void* pvParameters )
 			}
 			break;
 
-			case DD_Message_TaskDelete:
+			case DD_Message_TaskDelete_Periodic:
 			{
-				// TODO:	run scheduling algorithms
-				//			remove item from list and change priorities
-				//			move overdue stuff
 				DebugSafePrint("Received delete message for task %s\n", ((DD_TaskHandle_t)(xReceivedMessage.data))->sTaskName);
 				DD_TaskListRemoveByHandle(&xActiveTaskList, (DD_TaskHandle_t)(xReceivedMessage.data));
 				DD_TaskListRemoveOverdue(&xActiveTaskList, &xOverdueTaskList, xTick); // remove overdue after in case the one we are deleting is overdue
 				xTaskNotifyGive(xReceivedMessage.sender);
+			}
+			break;
+
+			case DD_Message_TaskDelete_SporadicOverdue:
+			{
+				DebugSafePrint("Received delete message for overdue sporadic task %s\n", ((DD_TaskHandle_t)(xReceivedMessage.data))->sTaskName);
+				DD_TaskListRemoveOverdue(&xActiveTaskList, &xOverdueTaskList, xTick); // remove overdue after in case the one we are deleting is overdue
 			}
 			break;
 
@@ -206,7 +206,7 @@ DD_Status_t 	DD_TaskDelete(DD_TaskHandle_t ddTask)
 	 */
 
 	DD_Message_t message = {
-		.msg = DD_Message_TaskDelete,
+		.msg = DD_Message_TaskDelete_Periodic,
 		.sender = xTaskGetCurrentTaskHandle(),
 		.data = (void*)ddTask,
 	};

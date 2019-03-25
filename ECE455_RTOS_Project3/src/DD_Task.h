@@ -20,10 +20,18 @@ typedef enum DD_TaskStatus_t
 	DD_TaskOverdue,
 } DD_TaskStatus_t;
 
+typedef enum DD_TaskType_t
+{
+	DD_TaskUnclassified,
+	DD_TaskPeriodic,
+	DD_TaskSporadic,
+} DD_TaskType_t;
+
 
 typedef struct DD_Task_t
 {
 	TaskHandle_t 		xTask;
+	DD_TaskType_t		xTaskType;
 	TaskFunction_t 		xFunction;
 	TickType_t			xCreationTime;
 	TickType_t			xRelDeadline;

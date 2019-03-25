@@ -26,6 +26,7 @@ DD_TaskHandle_t DD_TaskAlloc()
 	ret->xRelDeadline = 0;
 	ret->xPriority = DD_TASK_PRIORITY_UNRELEASED;
 	ret->xStatus = DD_TaskUninitialized;
+	ret->xTaskType = DD_TaskUnclassified;
 	ret->pNext = NULL;
 	ret->pPrev = NULL;
 
@@ -58,7 +59,8 @@ DD_Status_t		DD_TaskDealloc(DD_TaskHandle_t ddTask)
 	ddTask->xAbsDeadline = 0;
 	ddTask->xCreationTime = 0;
 	ddTask->xRelDeadline = 0;
-	ddTask->xStatus = 0;
+	ddTask->xStatus = DD_TaskUninitialized;
+	ddTask->xTaskType = DD_TaskUnclassified;
 
 	vPortFree((void*)ddTask);
 
