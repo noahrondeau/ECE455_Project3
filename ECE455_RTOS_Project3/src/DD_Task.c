@@ -190,14 +190,16 @@ char* DD_TaskListDataReturn(DD_TaskListHandle_t list)
 {
 
 	u32 size = DD_TaskListGetSize(list);
-	int dynamicSize = 48 + (size+1)*(20+3+sizeof(TickType_t)+14);
+	int dynamicSize =((int)size + 1)*(20+3+sizeof(TickType_t)+14+48);
 	char* data = (char*)pvPortMalloc(dynamicSize);
 
 	DD_TaskHandle_t pAux = list->pHead;
 
+
+	int hfDebug = 0;
 	while(pAux != NULL)
 	{
-		char buffer[100];
+		char buffer[200];
 
 		char* temp1;
 		switch(pAux->xStatus)
@@ -219,6 +221,8 @@ char* DD_TaskListDataReturn(DD_TaskListHandle_t list)
 				(unsigned int)pAux->xAbsDeadline,
 				temp1);
 		strcat(data,buffer);
+
+		hfDebug++;
 		pAux++;
 	}
 

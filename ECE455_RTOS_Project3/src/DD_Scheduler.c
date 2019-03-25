@@ -24,6 +24,8 @@ DD_Status_t DD_SchedulerStart(void);
 void DD_SchedulerTaskFunction( void* pvParameters );
 void vMonitorTask(void* pvParameters);
 
+void MockTaskListFunction(DD_TaskListHandle_t ActiveList,DD_TaskListHandle_t OverdueList);
+
 
 /* ---------------- PRIVATE FUNCTIONS ------------------ */
 
@@ -137,10 +139,10 @@ void vMonitorTask(void* pvParameters)
 	taskCount = uxTaskGetNumberOfTasks();
 	DebugSafePrint("Number of tasks at FIRST mock run is: %d\n", taskCount);
 
+	MockTaskListFunction(&xActiveTaskList,&xOverdueTaskList);
 
 	while(1)
 	{
-
 		taskCount = uxTaskGetNumberOfTasks();
 		DebugSafePrint("Number of tasks at mock run is: %d\n", taskCount);
 
@@ -148,6 +150,50 @@ void vMonitorTask(void* pvParameters)
 		DD_ReturnOverdueList();
 
 		vTaskDelay(5000);
+	}
+}
+
+/* ---------------- Scheduler Test Functions ------------------ */
+
+void MockTaskListFunction(DD_TaskListHandle_t ActiveList,DD_TaskListHandle_t OverdueList)
+{
+	if(DD_TaskListIsEmpty(ActiveList))
+	{
+		DD_TaskHandle_t activeStart = DD_TaskAlloc();
+		ActiveList->pHead=activeStart;
+		ActiveList->pTail=activeStart;
+		++(ActiveList->uSize);
+	}
+
+
+	DD_TaskHandle_t pAux1 = ActiveList->pHead;
+
+	for(int j = 0; j<5;j++)
+	{
+		DD_TaskHandle_t newTask = DD_TaskAlloc();
+		pAux1->pNext = newTask;
+		pAux1->pNext->pPrev = pAux1;
+		pAux1++;
+		++(ActiveList->uSize);
+	}
+
+	if(DD_TaskListIsEmpty(OverdueList))
+	{
+		DD_TaskHandle_t overdueStart = DD_TaskAlloc();
+		OverdueList->pHead=overdueStart;
+		OverdueList->pTail=overdueStart;
+		++(OverdueList->uSize);
+	}
+
+	DD_TaskHandle_t pAux2 = OverdueList->pHead;
+
+	for(int j = 0; j<5;j++)
+	{
+		DD_TaskHandle_t newTask = DD_TaskAlloc();
+		pAux2->pNext = newTask;
+		pAux2->pNext->pPrev = pAux2;
+		pAux2++;
+		++(OverdueList->uSize);
 	}
 }
 
