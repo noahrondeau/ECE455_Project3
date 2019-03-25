@@ -34,6 +34,7 @@ static DD_Status_t DD_SchedulerInit()
 	DD_TaskListInit(&xActiveTaskList);
 	DD_TaskListInit(&xOverdueTaskList);
 
+
 	xMessageQueue = xQueueCreate(SCHEDULER_MAX_USER_TASKS_NUM, sizeof(DD_Message_t));
 	vQueueAddToRegistry(xMessageQueue,"Message Queue");
 	xTaskCreate(DD_SchedulerTaskFunction, "DD_Scheduler", configMINIMAL_STACK_SIZE, NULL,DD_TASK_PRIOTITY_MONITOR, NULL);
@@ -114,7 +115,7 @@ void DD_SchedulerTaskFunction( void* pvParameters )
 			case DD_Message_GetOverdueList:
 			{
 				// TODO: everything
-
+				DebugSafePrint("Received Overdue List request\n");
 				xReceivedMessage.data = (void*)DD_TaskListDataReturn(&xOverdueTaskList);
 
 				 if( xMonitorQueue != 0 )
@@ -139,8 +140,6 @@ void vMonitorTask(void* pvParameters)
 	taskCount = uxTaskGetNumberOfTasks();
 	DebugSafePrint("Number of tasks at FIRST mock run is: %d\n", taskCount);
 
-	MockTaskListFunction(&xActiveTaskList,&xOverdueTaskList);
-
 	while(1)
 	{
 		taskCount = uxTaskGetNumberOfTasks();
@@ -157,44 +156,59 @@ void vMonitorTask(void* pvParameters)
 
 void MockTaskListFunction(DD_TaskListHandle_t ActiveList,DD_TaskListHandle_t OverdueList)
 {
-	if(DD_TaskListIsEmpty(ActiveList))
-	{
-		DD_TaskHandle_t activeStart = DD_TaskAlloc();
-		ActiveList->pHead=activeStart;
-		ActiveList->pTail=activeStart;
-		++(ActiveList->uSize);
-	}
+	//node creation
+	DD_TaskHandle_t active1 = DD_TaskAlloc();
+	DD_TaskHandle_t active2 = DD_TaskAlloc();
+	DD_TaskHandle_t active3 = DD_TaskAlloc();
+	DD_TaskHandle_t active4 = DD_TaskAlloc();
+	DD_TaskHandle_t active5 = DD_TaskAlloc();
+	//Task Naming
+	active1->sTaskName="Active1";
+	active2->sTaskName="Active2";
+	active3->sTaskName="Active3";
+	active4->sTaskName="Active4";
+	active5->sTaskName="Active5";
+	//List assignment
+	ActiveList->pHead = active1;
+	ActiveList->pTail = active5;
+	ActiveList->uSize = 5;
+	//Node next linkage
+	active1->pNext=active2;
+	active2->pNext=active3;
+	active3->pNext=active4;
+	active4->pNext=active5;
+	//Node prev linkage
+	active5->pPrev=active4;
+	active4->pPrev=active3;
+	active3->pPrev=active2;
+	active2->pPrev=active1;
 
-
-	DD_TaskHandle_t pAux1 = ActiveList->pHead;
-
-	for(int j = 0; j<5;j++)
-	{
-		DD_TaskHandle_t newTask = DD_TaskAlloc();
-		pAux1->pNext = newTask;
-		pAux1->pNext->pPrev = pAux1;
-		pAux1++;
-		++(ActiveList->uSize);
-	}
-
-	if(DD_TaskListIsEmpty(OverdueList))
-	{
-		DD_TaskHandle_t overdueStart = DD_TaskAlloc();
-		OverdueList->pHead=overdueStart;
-		OverdueList->pTail=overdueStart;
-		++(OverdueList->uSize);
-	}
-
-	DD_TaskHandle_t pAux2 = OverdueList->pHead;
-
-	for(int j = 0; j<5;j++)
-	{
-		DD_TaskHandle_t newTask = DD_TaskAlloc();
-		pAux2->pNext = newTask;
-		pAux2->pNext->pPrev = pAux2;
-		pAux2++;
-		++(OverdueList->uSize);
-	}
+	//node creation
+	DD_TaskHandle_t od1 = DD_TaskAlloc();
+	DD_TaskHandle_t od2 = DD_TaskAlloc();
+	DD_TaskHandle_t od3 = DD_TaskAlloc();
+	DD_TaskHandle_t od4 = DD_TaskAlloc();
+	DD_TaskHandle_t od5 = DD_TaskAlloc();
+	//Task Naming
+	od1->sTaskName="od1";
+	od2->sTaskName="od2";
+	od3->sTaskName="od3";
+	od4->sTaskName="od4";
+	od5->sTaskName="od5";
+	//List assignment
+	OverdueList->pHead = od1;
+	OverdueList->pTail = od5;
+	OverdueList->uSize = 5;
+	//Node next linkage
+	od1->pNext=od2;
+	od2->pNext=od3;
+	od3->pNext=od4;
+	od4->pNext=od5;
+	//Node prev linkage
+	od5->pPrev=od4;
+	od4->pPrev=od3;
+	od3->pPrev=od2;
+	od2->pPrev=od1;
 }
 
 
@@ -212,6 +226,10 @@ DD_Status_t DD_SchedulerStart()
 	status = DD_MonitorInit();
 	if (status != DD_Success)
 		return status;
+
+
+	//TODO: List testing
+	MockTaskListFunction(&xActiveTaskList,&xOverdueTaskList);
 
 	vTaskStartScheduler();
 
