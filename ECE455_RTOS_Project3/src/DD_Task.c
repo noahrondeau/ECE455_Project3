@@ -288,6 +288,7 @@ DD_Status_t	DD_TaskListRemoveByHandle(DD_TaskListHandle_t list, DD_TaskHandle_t 
 	return DD_Success;
 }
 
+/*
 // append list2 to list1
 DD_Status_t	DD_TaskListConcatenate(DD_TaskListHandle_t list1, DD_TaskListHandle_t list2)
 {
@@ -301,9 +302,14 @@ DD_Status_t	DD_TaskListConcatenate(DD_TaskListHandle_t list1, DD_TaskListHandle_
 	list1->pTail = list2->pTail;
 
 	return DD_Success;
+}*/
+
+DD_Status_t DD_TaskListInsertBack(DD_TaskListHandle_t list, DD_TaskHandle_t task)
+{
+	return DD_Success;
 }
 
-// collect all overdue tasks into a temp list and return it (by value for the list struct)
+// collect all overdue tasks from the active list and put at the end of the overdue list
 DD_Status_t DD_TaskListRemoveOverdue(DD_TaskListHandle_t active, DD_TaskListHandle_t overdue, TickType_t currentTime)
 {
 	if (active == NULL || overdue == NULL)
@@ -312,44 +318,49 @@ DD_Status_t DD_TaskListRemoveOverdue(DD_TaskListHandle_t active, DD_TaskListHand
 		return DD_Argument_Null;
 	}
 
-	if (DD_TaskListIsEmpty(active))
-	{
-		DebugSafePrint("Active Task List is Empty\n");
-		return DD_Success;
-	}
-
 	DebugSafePrint("Active Task list size before removal: %d\n", active->uSize);
 
-	// tasklist struct to hold temp list of tasks
-	DD_TaskList_t temp;
-	DD_TaskListInit(&temp);
+	DD_TaskHandle_t pIter = active->pHead;
+	DD_TaskHandle_t pCurr;
 
-	DD_TaskHandle_t pAux = active->pHead;
 
-	// all tasks that are overdue must be at the front of the active list
-	// since the list is sorted by deadline
-	while (currentTime >= pAux->xAbsDeadline) // must be equal because its in ticks!
+	// iterate through the active list starting from the front
+	// all overdue tasks will be at the front since the list is sorted by deadline
+	// if the list is empty, pHead is null, and the following loop won't run
+	// if the entire list is overdue, then the last item will be the tail and we need to take a special action
+	while (pIter != NULL && currentTime >= pIter->xAbsDeadline)
 	{
 		// if the task has a resource, then this is still safe
 		// since the idle task cleans up resources
-		DebugSafePrint("Task %s is overdue\n", pAux->sTaskName);
-		vTaskSuspend(pAux->xTask);
-		vTaskDelete(pAux->xTask);
-		pAux->xStatus = DD_TaskOverdue;
+		DebugSafePrint("Task %s is overdue\n", pIter->sTaskName);
+		vTaskSuspend(pIter->xTask);
+		vTaskDelete(pIter->xTask);
+		pIter->xStatus = DD_TaskOverdue;
+		pCurr = pIter; // keep a reference to the current one
+		pIter = pIter->pNext; // move the next pointer to the next one
 
-		temp.uSize++;
+		// remove the item off the front and put it on the end of the overdue list
+		// on every iteration, pAux is garanteed to point to the front of the list
+		// it is always the front of the list
+
+		// remove from list
+		active->pHead = pCurr->pNext; // == pIter
+		pCurr->pPrev = NULL;
+
+		if (pCurr != active->pTail) // also: pIter != NULL, pCurr->pNext != NULL
+			pCurr->pNext->pPrev = NULL;
+
 		active->uSize--;
-		pAux = pAux->pNext;
+
+		// add to overdue
+		pCurr->pPrev = overdue->pTail;
+		overdue->pTail = pCurr;
+
+		if (overdue->pHead == NULL) // adding first item
+			overdue->pHead = pCurr;
+
+		overdue->uSize++;
 	}
-
-	// pAux now points to the first task that is not overdue
-	temp.pTail = pAux->pPrev;
-	pAux->pPrev->pNext = NULL;
-	temp.pHead = active->pHead;
-	active->pHead = pAux;
-	pAux->pPrev = NULL;
-
-	DD_TaskListConcatenate(overdue, &temp);
 
 	DebugSafePrint("Active Task List size after removal: %d\n", active->uSize);
 	return DD_Success;

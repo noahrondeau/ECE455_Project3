@@ -52,7 +52,6 @@ static DD_Status_t DD_MonitorInit()
 void DD_SchedulerTaskFunction( void* pvParameters )
 {
 	DD_Message_t xReceivedMessage;
-
 	TickType_t xTick = xTaskGetTickCount();
 
 	while (true)
@@ -60,6 +59,8 @@ void DD_SchedulerTaskFunction( void* pvParameters )
 		// wait forever for the next message to arrive
 		if (xQueueReceive(xMessageQueue, (void*)&xReceivedMessage, portMAX_DELAY) == pdTRUE)
 		{
+			xTick = xTaskGetTickCount();
+
 			switch (xReceivedMessage.msg)
 			{
 			case DD_Message_TaskCreate:
@@ -69,7 +70,7 @@ void DD_SchedulerTaskFunction( void* pvParameters )
 				//			move overdue stuff
 				// Notify the message sender its message is being processed
 				DebugSafePrint("Received create message for task %s\n", ((DD_TaskHandle_t)(xReceivedMessage.data))->sTaskName);
-				//DD_TaskListRemoveOverdue(&xActiveTaskList, &xOverdueTaskList, xTick);
+				DD_TaskListRemoveOverdue(&xActiveTaskList, &xOverdueTaskList, xTick);
 				DD_TaskListInsertByDeadline(&xActiveTaskList, (DD_TaskHandle_t)(xReceivedMessage.data));
 				vTaskResume(((DD_TaskHandle_t)(xReceivedMessage.data))->xTask);
 				xTaskNotifyGive(xReceivedMessage.sender);
@@ -85,7 +86,7 @@ void DD_SchedulerTaskFunction( void* pvParameters )
 				//			move overdue stuff
 				DebugSafePrint("Received delete message for task %s\n", ((DD_TaskHandle_t)(xReceivedMessage.data))->sTaskName);
 				DD_TaskListRemoveByHandle(&xActiveTaskList, (DD_TaskHandle_t)(xReceivedMessage.data));
-				//DD_TaskListRemoveOverdue(&xActiveTaskList, &xOverdueTaskList, xTick);
+				DD_TaskListRemoveOverdue(&xActiveTaskList, &xOverdueTaskList, xTick); // remove overdue after in case the one we are deleting is overdue
 				xTaskNotifyGive(xReceivedMessage.sender);
 			}
 			break;

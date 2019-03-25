@@ -203,8 +203,8 @@ void vTest1(void* pvParameters)
 	while(1)
 	{
 		xTickCurr = xTaskGetTickCount();
-		if ( xTickCurr <= ddSelf->xAbsDeadline)
-		{
+		//if ( xTickCurr <= ddSelf->xAbsDeadline)
+		//{
 			if (xTickCurr != xTickPrev)
 			{
 				if (xTickCurr % 100 == 0)
@@ -213,11 +213,12 @@ void vTest1(void* pvParameters)
 					fflush(stdout);
 				}
 			}
-		}
-		else
-		{
-			DD_TaskDelete(ddSelf);
-		}
+		//}
+		//else
+		//{
+			//Test the removal by having task 1 never delete itself
+			//DD_TaskDelete(ddSelf);
+		//}
 
 		xTickPrev = xTickCurr;
 	}
@@ -290,10 +291,10 @@ void vGenTask1( void* pvParameters)
 		DD_TaskHandle_t ddTestTask = DD_TaskAlloc();
 		ddTestTask->sTaskName = "TestTask1";
 		ddTestTask->xFunction = vTest1;
-		ddTestTask->xRelDeadline = 15000;
+		ddTestTask->xRelDeadline = 5000;
 
 		DD_TaskCreate(ddTestTask);
-		vTaskDelay(40000);// wait another 25 s before running again
+		vTaskDelay(120000);// wait another 25 s before running again
 	}
 }
 
@@ -301,13 +302,14 @@ void vGenTask2( void* pvParameters)
 {
 	while(1)
 	{
+		vTaskDelay(6000); // release 1 second after task 1 becomes overdue
 		DD_TaskHandle_t ddTestTask = DD_TaskAlloc();
 		ddTestTask->sTaskName = "TestTask2";
 		ddTestTask->xFunction = vTest2;
-		ddTestTask->xRelDeadline = 20000;
+		ddTestTask->xRelDeadline = 15000;
 
 		DD_TaskCreate(ddTestTask);
-		vTaskDelay(40000);// wait another 25 s before running again
+		vTaskDelay(120000);// wait another 25 s before running again
 	}
 }
 
@@ -318,10 +320,10 @@ void vGenTask3( void* pvParameters)
 		DD_TaskHandle_t ddTestTask = DD_TaskAlloc();
 		ddTestTask->sTaskName = "TestTask3";
 		ddTestTask->xFunction = vTest3;
-		ddTestTask->xRelDeadline = 10000;
+		ddTestTask->xRelDeadline = 12000;
 
 		DD_TaskCreate(ddTestTask);
-		vTaskDelay(40000);// wait another 25 s before running again
+		vTaskDelay(120000);// wait another 25 s before running again
 	}
 }
 
