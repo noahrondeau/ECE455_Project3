@@ -157,8 +157,12 @@ functionality.
 static void prvSetupHardware( void );
 
 
-void vTestTaskFunction(void* pvParameters);
-void vGeneratorTaskFunction( void* pvParameters);
+void vTest1(void* pvParameters);
+void vTest2(void* pvParameters);
+void vTest3(void* pvParameters);
+void vGenTask1( void* pvParameters);
+void vGenTask2( void* pvParameters);
+void vGenTask3( void* pvParameters);
 void vMonitorTask(void* pvParameters);
 
 TaskHandle_t xQueueTest;
@@ -172,7 +176,9 @@ int main(void)
 	SafePrintInit();
 
 	/* Start the tasks and timer running. */
-	xTaskCreate(vGeneratorTaskFunction, "GeneratorTask", configMINIMAL_STACK_SIZE, NULL, DD_TASK_GEN_PRIORITY_MIN, NULL);
+	xTaskCreate(vGenTask1, "GenTask1", configMINIMAL_STACK_SIZE, NULL, DD_TASK_GEN_PRIORITY_PERIODIC, NULL);
+	xTaskCreate(vGenTask2, "GenTask2", configMINIMAL_STACK_SIZE, NULL, DD_TASK_GEN_PRIORITY_PERIODIC, NULL);
+	xTaskCreate(vGenTask3, "GenTask3", configMINIMAL_STACK_SIZE, NULL, DD_TASK_GEN_PRIORITY_PERIODIC, NULL);
 	DD_SchedulerStart(); // starts the DD_Scheduler and the FreeRTOS scheduler
 
 
@@ -187,31 +193,135 @@ int main(void)
 
 /*-----------------------------------------------------------*/
 //TEST TASKS
-void vTestTaskFunction(void* pvParameters)
+void vTest1(void* pvParameters)
 {
 	// get self item from params
 	DD_TaskHandle_t ddSelf = (DD_TaskHandle_t)pvParameters;
 
+	TickType_t xTickCurr;
+	TickType_t xTickPrev;
 	while(1)
 	{
-		vTaskDelay(2500); // delay 5s to see effect
-		DebugSafePrint("Running the task then deleting myself!\n", ddSelf->sTaskName);
-		vTaskDelay(2500);
-		DD_TaskDelete(ddSelf);
+		xTickCurr = xTaskGetTickCount();
+		if ( xTickCurr <= ddSelf->xAbsDeadline)
+		{
+			if (xTickCurr != xTickPrev)
+			{
+				if (xTickCurr % 100 == 0)
+				{
+					printf("1");
+					fflush(stdout);
+				}
+			}
+		}
+		else
+		{
+			DD_TaskDelete(ddSelf);
+		}
+
+		xTickPrev = xTickCurr;
 	}
 }
 
-void vGeneratorTaskFunction( void* pvParameters)
+void vTest2(void* pvParameters)
+{
+	// get self item from params
+	DD_TaskHandle_t ddSelf = (DD_TaskHandle_t)pvParameters;
+
+	TickType_t xTickCurr;
+	TickType_t xTickPrev;
+	while(1)
+	{
+		xTickCurr = xTaskGetTickCount();
+		if ( xTickCurr <= ddSelf->xAbsDeadline)
+		{
+			if (xTickCurr != xTickPrev)
+			{
+				if (xTickCurr % 100 == 0)
+				{
+					printf("2");
+					fflush(stdout);
+				}
+			}
+		}
+		else
+		{
+			DD_TaskDelete(ddSelf);
+		}
+
+		xTickPrev = xTickCurr;
+	}
+}
+
+void vTest3(void* pvParameters)
+{
+	// get self item from params
+	DD_TaskHandle_t ddSelf = (DD_TaskHandle_t)pvParameters;
+
+	TickType_t xTickCurr;
+	TickType_t xTickPrev;
+	while(1)
+	{
+		xTickCurr = xTaskGetTickCount();
+		if ( xTickCurr <= ddSelf->xAbsDeadline)
+		{
+			if (xTickCurr != xTickPrev)
+			{
+				if (xTickCurr % 100 == 0)
+				{
+					printf("3");
+					fflush(stdout);
+				}
+			}
+		}
+		else
+		{
+			DD_TaskDelete(ddSelf);
+		}
+
+		xTickPrev = xTickCurr;
+	}
+}
+
+void vGenTask1( void* pvParameters)
 {
 	while(1)
 	{
 		DD_TaskHandle_t ddTestTask = DD_TaskAlloc();
-		ddTestTask->sTaskName = "TestTask";
-		ddTestTask->xFunction = vTestTaskFunction;
-		ddTestTask->xRelDeadline = 1000;
+		ddTestTask->sTaskName = "TestTask1";
+		ddTestTask->xFunction = vTest1;
+		ddTestTask->xRelDeadline = 15000;
 
 		DD_TaskCreate(ddTestTask);
-		vTaskDelay(30000);// wait another 25 s before running again
+		vTaskDelay(40000);// wait another 25 s before running again
+	}
+}
+
+void vGenTask2( void* pvParameters)
+{
+	while(1)
+	{
+		DD_TaskHandle_t ddTestTask = DD_TaskAlloc();
+		ddTestTask->sTaskName = "TestTask2";
+		ddTestTask->xFunction = vTest2;
+		ddTestTask->xRelDeadline = 20000;
+
+		DD_TaskCreate(ddTestTask);
+		vTaskDelay(40000);// wait another 25 s before running again
+	}
+}
+
+void vGenTask3( void* pvParameters)
+{
+	while(1)
+	{
+		DD_TaskHandle_t ddTestTask = DD_TaskAlloc();
+		ddTestTask->sTaskName = "TestTask3";
+		ddTestTask->xFunction = vTest3;
+		ddTestTask->xRelDeadline = 10000;
+
+		DD_TaskCreate(ddTestTask);
+		vTaskDelay(40000);// wait another 25 s before running again
 	}
 }
 

@@ -127,7 +127,12 @@ DD_Status_t	DD_TaskListInsertByDeadline(DD_TaskListHandle_t list, DD_TaskHandle_
 			// if at the front
 			ddTask->pNext = pAux;
 			ddTask->pPrev = pAux->pPrev; // will be null if pAux == pHead
+
+			if (pAux->pPrev != NULL)
+				pAux->pPrev->pNext = ddTask;
+
 			pAux->pPrev = ddTask;
+
 
 			// if inserting at the front, move the head pointer
 			if (pAux == list->pHead )
@@ -137,7 +142,6 @@ DD_Status_t	DD_TaskListInsertByDeadline(DD_TaskListHandle_t list, DD_TaskHandle_
 			ddTask->xPriority = pAux->xPriority  + 1;
 			vTaskPrioritySet(ddTask->xTask, ddTask->xPriority);
 
-			(list->uSize)++;
 			break; // early return from here
 
 		}
@@ -159,6 +163,8 @@ DD_Status_t	DD_TaskListInsertByDeadline(DD_TaskListHandle_t list, DD_TaskHandle_
 
 				ddTask->xPriority = DD_TASK_USER_PRIORITY(0);
 				vTaskPrioritySet(ddTask->xTask, ddTask->xPriority);
+
+				break;
 			}
 
 			pAux++; // no early return, want to keep iterating
