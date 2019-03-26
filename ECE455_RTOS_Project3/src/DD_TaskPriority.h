@@ -23,13 +23,14 @@ typedef UBaseType_t DD_TaskPriority_t;
  */
 
 // TODO figure out actual values
-#define DD_TASK_PRIORITY_SCHEDULER		(31)//(ULONG_MAX - 1000) // give a bit of margin
+#define DD_TASK_PRIORITY_TIMER			(configMAX_PRIORITIES - 1)
+#define DD_TASK_PRIORITY_SCHEDULER		(configMAX_PRIORITIES - 2)
 #define DD_TASK_PRIORITY_IDLE			(0) // Tentatively could be set to 1!
 #define DD_TASK_PRIORITY_UNRELEASED		(1) // tentatively could be set to 0!
 #define	DD_TASK_PRIOTITY_MONITOR		(2)
-#define DD_TASK_GEN_PRIORITY_PERIODIC	(29)
-#define DD_TASK_GEN_PRIORITY_APERIODIC	(30)
 #define	DD_TASK_USER_PRIORITY_MIN		(3)
+#define DD_TASK_GEN_PRIORITY_APERIODIC	(DD_TASK_PRIORITY_SCHEDULER - 1)
+#define DD_TASK_GEN_PRIORITY_PERIODIC	(DD_TASK_GEN_PRIORITY_APERIODIC - 1)
 #define DD_TASK_USER_PRIORITY_MAX		(DD_TASK_GEN_PRIORITY_PERIODIC - 1)
 
 

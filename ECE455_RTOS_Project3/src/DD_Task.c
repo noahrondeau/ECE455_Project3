@@ -19,6 +19,7 @@ DD_TaskHandle_t DD_TaskAlloc()
 
 	ret->xTask = NULL;
 	ret->xFunction = NULL;
+	ret->xTimer = NULL;
 	ret->sTaskName = "";
 	ret->uStackSize = configMINIMAL_STACK_SIZE;
 	ret->xCreationTime = 0;

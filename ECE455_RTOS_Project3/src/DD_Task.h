@@ -33,6 +33,7 @@ typedef struct DD_Task_t
 	TaskHandle_t 		xTask;
 	DD_TaskType_t		xTaskType;
 	TaskFunction_t 		xFunction;
+	TimerHandle_t		xTimer;
 	TickType_t			xCreationTime;
 	TickType_t			xRelDeadline;
 	TickType_t			xAbsDeadline;

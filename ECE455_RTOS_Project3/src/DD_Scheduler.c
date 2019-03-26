@@ -21,6 +21,7 @@ static DD_Status_t DD_MonitorInit(void);
 DD_Status_t DD_SchedulerStart(void);
 
 void DD_SchedulerTaskFunction( void* pvParameters );
+static void DD_SporadicTaskTimerCallback(TimerHandle_t xTimer);
 
 
 /* ---------------- PRIVATE FUNCTIONS ------------------ */
@@ -53,6 +54,7 @@ void DD_SchedulerTaskFunction( void* pvParameters )
 {
 	DD_Message_t xReceivedMessage;
 	TickType_t xTick = xTaskGetTickCount();
+	DD_TaskHandle_t xReceivedTask = NULL;
 
 	while (true)
 	{
@@ -60,36 +62,78 @@ void DD_SchedulerTaskFunction( void* pvParameters )
 		if (xQueueReceive(xMessageQueue, (void*)&xReceivedMessage, portMAX_DELAY) == pdTRUE)
 		{
 			xTick = xTaskGetTickCount();
+			xReceivedTask = (DD_TaskHandle_t)(xReceivedMessage.data); // only valid in certain cases of the switch
 
 			switch (xReceivedMessage.msg)
 			{
 			case DD_Message_TaskCreate:
 			{
-				DebugSafePrint("Received create message for task %s\n", ((DD_TaskHandle_t)(xReceivedMessage.data))->sTaskName);
-				DD_TaskListRemoveOverdue(&xActiveTaskList, &xOverdueTaskList, xTick);
-				DD_TaskListInsertByDeadline(&xActiveTaskList, (DD_TaskHandle_t)(xReceivedMessage.data));
-				vTaskResume(((DD_TaskHandle_t)(xReceivedMessage.data))->xTask);
-				xTaskNotifyGive(xReceivedMessage.sender);
+				if ( (xReceivedTask == NULL) || (xReceivedTask->xTask == NULL) )
+				{
+					// ERROR!
+					DebugSafePrint("Received create message but task handle was null");
+				}
+				else
+				{
+					DebugSafePrint("Received create message for task %s\n", xReceivedTask->sTaskName);
+					DD_TaskListRemoveOverdue(&xActiveTaskList, &xOverdueTaskList, xTick);
+					DD_TaskListInsertByDeadline(&xActiveTaskList, xReceivedTask);
 
+					// if the task is marked sporadic, start a timer that will go off at the deadline
+					// this timer will delete the FreeRTOS task (not the DD_Task_t)
+					if (xReceivedTask->xTaskType == DD_TaskSporadic)
+					{
+						xReceivedTask->xTimer = xTimerCreate(
+								xReceivedTask->sTaskName,
+								xReceivedTask->xAbsDeadline - xTick,
+								pdFALSE,
+								(void*)xReceivedTask,
+								DD_SporadicTaskTimerCallback);
 
+						xTimerStart(xReceivedTask->xTimer, 0); // no block
+					}
+
+					vTaskResume(xReceivedTask->xTask);
+					xTaskNotifyGive(xReceivedMessage.sender);
+				}
 			}
 			break;
 
-			case DD_Message_TaskDelete_Periodic:
+			case DD_Message_TaskDelete:
 			{
-				DebugSafePrint("Received delete message for task %s\n", ((DD_TaskHandle_t)(xReceivedMessage.data))->sTaskName);
-				DD_TaskListRemoveByHandle(&xActiveTaskList, (DD_TaskHandle_t)(xReceivedMessage.data));
-				DD_TaskListRemoveOverdue(&xActiveTaskList, &xOverdueTaskList, xTick); // remove overdue after in case the one we are deleting is overdue
-				xTaskNotifyGive(xReceivedMessage.sender);
+				if ( (xReceivedTask == NULL) || (xReceivedTask->xTask == NULL) )
+				{
+					// ERROR!
+					DebugSafePrint("Received create message but task handle was null");
+				}
+				else
+				{
+					DebugSafePrint("Received delete message for task %s\n", xReceivedTask->sTaskName);
+
+					// if the task is sporadic, and
+					// if the timer callback hasn't already gone off, stop the timer
+					if (	(xReceivedTask->xTaskType == DD_TaskSporadic)
+							&& (xReceivedTask->xStatus != DD_TaskOverdue) )
+					{
+						xTimerStop(xReceivedTask->xTimer, 0); // no block
+						//DebugSafePrint("Task was not overdue yet");
+					}
+
+					DD_TaskListRemoveByHandle(&xActiveTaskList, xReceivedTask);
+					DD_TaskListRemoveOverdue(&xActiveTaskList, &xOverdueTaskList, xTick); // remove overdue after in case the one we are deleting is overdue
+					xTaskNotifyGive(xReceivedMessage.sender);
+				}
 			}
 			break;
 
+			/*// This job is currently taking care of as garbage collection by the monitor task and any time the scheduler is invoked
 			case DD_Message_TaskDelete_SporadicOverdue:
 			{
-				DebugSafePrint("Received delete message for overdue sporadic task %s\n", ((DD_TaskHandle_t)(xReceivedMessage.data))->sTaskName);
+				DebugSafePrint("Received delete message for overdue sporadic task %s\n", xReceivedTask->sTaskName);
 				DD_TaskListRemoveOverdue(&xActiveTaskList, &xOverdueTaskList, xTick); // remove overdue after in case the one we are deleting is overdue
 			}
 			break;
+			*/
 
 			case DD_Message_GetActiveList:
 			{
@@ -105,6 +149,27 @@ void DD_SchedulerTaskFunction( void* pvParameters )
 			}
 		}
 	}
+}
+
+static void DD_SporadicTaskTimerCallback(TimerHandle_t xTimer)
+{
+	// ID field is used to store pointer to the DD_TaskHandle_t of the associated task
+	// this task handle also contains the xTimer pointer, i.e. ddTaskToDelete->xTimer == xTimer
+	DD_TaskHandle_t ddTaskToDelete = (DD_TaskHandle_t)pvTimerGetTimerID( xTimer );
+
+	xTimerDelete(ddTaskToDelete->xTimer, 0);
+	ddTaskToDelete->xTimer = NULL;
+
+	// immediately suspend and delete the overdue task
+	vTaskSuspend(ddTaskToDelete->xTask);
+	vTaskDelete(ddTaskToDelete->xTask);
+
+	ddTaskToDelete->xStatus = DD_TaskOverdue; // mark it overdue immediately so that we can check this later
+	DebugSafePrint("Aperiodic task %s overdue and killed by scheduler\n", ddTaskToDelete->sTaskName);
+
+	// for now, we just let the regular scheduler functionality deal with
+	// garbage-collecting this overdue task into the overdue list
+	// since the "remove overdue" routine is run on every single invocation of the DD_Scheduler
 }
 
 
@@ -206,7 +271,7 @@ DD_Status_t 	DD_TaskDelete(DD_TaskHandle_t ddTask)
 	 */
 
 	DD_Message_t message = {
-		.msg = DD_Message_TaskDelete_Periodic,
+		.msg = DD_Message_TaskDelete,
 		.sender = xTaskGetCurrentTaskHandle(),
 		.data = (void*)ddTask,
 	};
