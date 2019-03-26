@@ -190,8 +190,9 @@ char* DD_TaskListDataReturn(DD_TaskListHandle_t list)
 {
 
 	u32 size = DD_TaskListGetSize(list);
-	int dynamicSize =((int)size + 1)*(20+3+sizeof(TickType_t)+14+48);
+	u32 dynamicSize = (size + 1)*(20+3+sizeof(TickType_t)+14+48);
 	char* data = (char*)pvPortMalloc(dynamicSize);
+	data[0] = '\0'; // instead of zeroing the whole thing, spoof it by making the first char null
 
 	DD_TaskHandle_t pAux = list->pHead;
 

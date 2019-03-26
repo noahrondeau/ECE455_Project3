@@ -356,7 +356,7 @@ DD_Status_t		DD_ReturnActiveList(void)
 		NULL,
 	};
 
-	 if( xMessageQueue != 0 )
+	 if( xMessageQueue != NULL )
 	    {
 	        if( xQueueSend( xMessageQueue,
 	                       ( void * ) &xActiveRequest,
@@ -366,12 +366,13 @@ DD_Status_t		DD_ReturnActiveList(void)
 	        }
 	    }
 
-	 if( xMonitorQueue != 0 )
+	 if( xMonitorQueue != NULL )
 	    {
-	        if( xQueueReceive( xMonitorQueue, &xActiveRequest, ( TickType_t ) 10 ) )
+	        if( xQueueReceive( xMonitorQueue, (void*)&xActiveRequest, ( TickType_t ) portMAX_DELAY ) )
 	        {
 	        	SafePrint(true,"Active Task List:\n%s\n",(char*)(xActiveRequest.data));
-	        	vPortFree((char*)(xActiveRequest.data));
+	        	vPortFree(xActiveRequest.data);
+	        	xActiveRequest.data = NULL;
 	        }
 	    }
 
@@ -387,7 +388,7 @@ DD_Status_t		DD_ReturnOverdueList(void)
 		NULL,
 	};
 
-	 if( xMessageQueue != 0 )
+	 if( xMessageQueue != NULL )
 	    {
 	        if( xQueueSend( xMessageQueue,
 	                       ( void * ) &xOverdueRequest,
@@ -397,12 +398,13 @@ DD_Status_t		DD_ReturnOverdueList(void)
 	        }
 	    }
 
-	 if( xMonitorQueue != 0 )
+	 if( xMonitorQueue != NULL )
 	    {
-	        if( xQueueReceive( xMonitorQueue, &xOverdueRequest, ( TickType_t ) 10 ) )
+	        if( xQueueReceive( xMonitorQueue, (void*)&xOverdueRequest, ( TickType_t ) portMAX_DELAY ) )
 	        {
 	        	SafePrint(true,"Overdue Task List:\n%s\n",(char*)(xOverdueRequest.data));
-	        	vPortFree((char*)(xOverdueRequest.data));
+	        	vPortFree(xOverdueRequest.data);
+	        	xOverdueRequest.data = NULL;
 	        }
 	    }
 
