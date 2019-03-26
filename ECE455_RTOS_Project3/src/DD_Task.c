@@ -98,7 +98,7 @@ bool DD_TaskListIsEmpty(DD_TaskListHandle_t list)
 // traverse the list from the front, modifying deadlines until the insertion point is found
 DD_Status_t	DD_TaskListInsertByDeadline(DD_TaskListHandle_t list, DD_TaskHandle_t ddTask)
 {
-	DebugSafePrint("List Size before insertion: %d\n", list->uSize);
+	SafePrintFromTask(DEBUG_LIST, "List Size before insertion: %d\n", list->uSize);
 
 	ddTask->xStatus = DD_TaskActive;
 
@@ -110,7 +110,7 @@ DD_Status_t	DD_TaskListInsertByDeadline(DD_TaskListHandle_t list, DD_TaskHandle_
 		list->uSize = 1;
 		ddTask->xPriority = DD_TASK_USER_PRIORITY(0);
 		vTaskPrioritySet(ddTask->xTask, ddTask->xPriority);
-		DebugSafePrint("List Size after insertion: %d\n", list->uSize);
+		SafePrintFromTask(DEBUG_LIST, "List Size after insertion: %d\n", list->uSize);
 		return DD_Success;
 	}
 
@@ -179,7 +179,7 @@ DD_Status_t	DD_TaskListInsertByDeadline(DD_TaskListHandle_t list, DD_TaskHandle_
 
 	(list->uSize)++;
 
-	DebugSafePrint("List Size after insertion: %d\n", list->uSize);
+	SafePrintFromTask(DEBUG_LIST, "List Size after insertion: %d\n", list->uSize);
 	return DD_Success;
 }
 
@@ -191,14 +191,14 @@ DD_Status_t	DD_TaskListRemoveByHandle(DD_TaskListHandle_t list, DD_TaskHandle_t 
 	// check that the arguments are not null
 	if (list == NULL || ddTask == NULL)
 	{
-		DebugSafePrint("Null Parameter\n");
+		SafePrintFromTask(DEBUG_LIST, "Null Parameter\n");
 		return DD_Argument_Null;
 	}
 
 	// if the list is empty, just return
 	if (DD_TaskListIsEmpty(list))
 	{
-		DebugSafePrint("Task List is Empty\n");
+		SafePrintFromTask(DEBUG_LIST, "Task List is Empty\n");
 		return DD_TaskList_TaskHandle_Not_Found;
 	}
 
@@ -221,13 +221,13 @@ DD_Status_t	DD_TaskListRemoveByHandle(DD_TaskListHandle_t list, DD_TaskHandle_t 
 	// if we got to the end, then its not there
 	if (pAux == NULL)
 	{
-		DebugSafePrint("Task Handle not in list");
+		SafePrintFromTask(DEBUG_LIST, "Task Handle not in list");
 		return DD_TaskList_TaskHandle_Not_Found;
 	}
 
 	/* ------------- REMOVE FROM LIST -------------------- */
 
-	DebugSafePrint("Task list size before removal: %d\n", list->uSize);
+	SafePrintFromTask(DEBUG_LIST, "Task list size before removal: %d\n", list->uSize);
 
 	ddTask->xStatus = DD_TaskDeleted;
 
@@ -287,7 +287,7 @@ DD_Status_t	DD_TaskListRemoveByHandle(DD_TaskListHandle_t list, DD_TaskHandle_t 
 		list->uSize--;
 	}
 
-	DebugSafePrint("Active Task List size after removal: %d\n", list->uSize);
+	SafePrintFromTask(DEBUG_LIST, "Active Task List size after removal: %d\n", list->uSize);
 	return DD_Success;
 }
 
@@ -317,11 +317,11 @@ DD_Status_t DD_TaskListRemoveOverdue(DD_TaskListHandle_t active, DD_TaskListHand
 {
 	if (active == NULL || overdue == NULL)
 	{
-		DebugSafePrint("Null Parameter\n");
+		SafePrintFromTask(DEBUG_LIST, "Null Parameter\n");
 		return DD_Argument_Null;
 	}
 
-	DebugSafePrint("Active Task list size before removal: %d\n", active->uSize);
+	SafePrintFromTask(DEBUG_LIST, "Active Task list size before removal: %d\n", active->uSize);
 
 	DD_TaskHandle_t pIter = active->pHead;
 	DD_TaskHandle_t pCurr;
@@ -335,7 +335,7 @@ DD_Status_t DD_TaskListRemoveOverdue(DD_TaskListHandle_t active, DD_TaskListHand
 	{
 		// if the task has a resource, then this is still safe
 		// since the idle task cleans up resources
-		DebugSafePrint("Task %s is overdue\n", pIter->sTaskName);
+		SafePrintFromTask(DEBUG_LIST, "Task %s is overdue\n", pIter->sTaskName);
 		vTaskSuspend(pIter->xTask);
 		vTaskDelete(pIter->xTask);
 		pIter->xStatus = DD_TaskOverdue;
@@ -365,7 +365,7 @@ DD_Status_t DD_TaskListRemoveOverdue(DD_TaskListHandle_t active, DD_TaskListHand
 		overdue->uSize++;
 	}
 
-	DebugSafePrint("Active Task List size after removal: %d\n", active->uSize);
+	SafePrintFromTask(DEBUG_LIST, "Active Task List size after removal: %d\n", active->uSize);
 	return DD_Success;
 }
 

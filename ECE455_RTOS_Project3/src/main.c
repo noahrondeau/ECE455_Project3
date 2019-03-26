@@ -169,14 +169,17 @@ TaskHandle_t xGenPeriodic1Handle;
 TaskHandle_t xGenPeriodic2Handle;
 TaskHandle_t xGenAperiodic1Handle;
 
-#define P1_PERIOD	(5000)
-#define P1_EXEC	(2500)
+#define P1_PERIOD	(20000)
+#define P1_EXEC	(5000)
+#define P1_LED_RATE (250)
 
-#define P2_PERIOD (10000)
-#define P2_EXEC	(5000)
+#define P2_PERIOD (40000)
+#define P2_EXEC	(10000)
+#define P2_LED_RATE (500)
 
-#define A1_DEAD	(2500)
-#define A1_EXEC	(2000)
+#define A1_DEAD	(10000)
+#define A1_EXEC	(5000)
+#define A1_LED_RATE	(50)
 
 /*-----------------------------------------------------------*/
 
@@ -186,11 +189,13 @@ int main(void)
 	STM_EVAL_PBInit(BUTTON_USER, BUTTON_MODE_EXTI);
 	NVIC_SetPriority(USER_BUTTON_EXTI_IRQn, 6);
 	STM_EVAL_LEDInit(LED4);
+	STM_EVAL_LEDInit(LED5);
+	STM_EVAL_LEDInit(LED6);
 	SafePrintInit();
 
 	/* Start the tasks and timer running. */
-	//xTaskCreate(vGenPeriodic1, "GenPeriodic1", configMINIMAL_STACK_SIZE, NULL, DD_TASK_GEN_PRIORITY_PERIODIC, &xGenPeriodic1Handle);
-	//xTaskCreate(vGenPeriodic2, "GenPeriodic2", configMINIMAL_STACK_SIZE, NULL, DD_TASK_GEN_PRIORITY_PERIODIC, &xGenPeriodic2Handle);
+	xTaskCreate(vGenPeriodic1, "GenPeriodic1", configMINIMAL_STACK_SIZE, NULL, DD_TASK_GEN_PRIORITY_PERIODIC, &xGenPeriodic1Handle);
+	xTaskCreate(vGenPeriodic2, "GenPeriodic2", configMINIMAL_STACK_SIZE, NULL, DD_TASK_GEN_PRIORITY_PERIODIC, &xGenPeriodic2Handle);
 	xTaskCreate(vGenAperiodic1, "GenAperiodic1", configMINIMAL_STACK_SIZE, NULL, DD_TASK_GEN_PRIORITY_APERIODIC, &xGenAperiodic1Handle);
 	DD_SchedulerStart(); // starts the DD_Scheduler and the FreeRTOS scheduler
 
@@ -233,15 +238,16 @@ void vTestPeriodic1(void* pvParameters)
 		{
 			if (xTickCurr != xTickPrev)
 			{
-				if (xTickCurr % 100 == 0)
+				if (xTickCurr % P1_LED_RATE == 0)
 				{
-					SafePrint(true, "1P");
+					STM_EVAL_LEDToggle(LED5);
 				}
 			}
 		}
 		else
 		{
 			//Test the removal by having task 1 never delete itself
+			STM_EVAL_LEDOff(LED5);
 			DD_TaskDelete(ddSelf);
 		}
 
@@ -263,14 +269,15 @@ void vTestPeriodic2(void* pvParameters)
 		{
 			if (xTickCurr != xTickPrev)
 			{
-				if (xTickCurr % 100 == 0)
+				if (xTickCurr % P2_LED_RATE == 0)
 				{
-					SafePrint(true, "2P");
+					STM_EVAL_LEDToggle(LED6);
 				}
 			}
 		}
 		else
 		{
+			STM_EVAL_LEDOff(LED6);
 			DD_TaskDelete(ddSelf);
 		}
 
@@ -292,16 +299,15 @@ void vTestAperiodic1(void* pvParameters)
 		{
 			if (xTickCurr != xTickPrev)
 			{
-				if (xTickCurr % 100 == 0)
+				if (xTickCurr % A1_LED_RATE == 0)
 				{
 					STM_EVAL_LEDToggle(LED4);
-					printf("1A");
-					fflush(stdout);
 				}
 			}
 		}
 		else
 		{
+			STM_EVAL_LEDOff(LED4);
 			DD_TaskDelete(ddSelf);
 		}
 

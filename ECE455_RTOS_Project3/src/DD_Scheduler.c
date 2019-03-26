@@ -71,11 +71,11 @@ void DD_SchedulerTaskFunction( void* pvParameters )
 				if ( (xReceivedTask == NULL) || (xReceivedTask->xTask == NULL) )
 				{
 					// ERROR!
-					DebugSafePrint("Received create message but task handle was null");
+					SafePrintFromTask(DEBUG_SCHED_CORE,"Received create message but task handle was null");
 				}
 				else
 				{
-					DebugSafePrint("Received create message for task %s\n", xReceivedTask->sTaskName);
+					SafePrintFromTask(DEBUG_SCHED_CORE,"Received create message for task %s\n", xReceivedTask->sTaskName);
 					DD_TaskListRemoveOverdue(&xActiveTaskList, &xOverdueTaskList, xTick);
 					DD_TaskListInsertByDeadline(&xActiveTaskList, xReceivedTask);
 
@@ -104,11 +104,11 @@ void DD_SchedulerTaskFunction( void* pvParameters )
 				if ( (xReceivedTask == NULL) || (xReceivedTask->xTask == NULL) )
 				{
 					// ERROR!
-					DebugSafePrint("Received create message but task handle was null");
+					SafePrintFromTask(DEBUG_SCHED_CORE,"Received create message but task handle was null");
 				}
 				else
 				{
-					DebugSafePrint("Received delete message for task %s\n", xReceivedTask->sTaskName);
+					SafePrintFromTask(DEBUG_SCHED_CORE,"Received delete message for task %s\n", xReceivedTask->sTaskName);
 
 					// if the task is sporadic, and
 					// if the timer callback hasn't already gone off, stop the timer
@@ -116,7 +116,7 @@ void DD_SchedulerTaskFunction( void* pvParameters )
 							&& (xReceivedTask->xStatus != DD_TaskOverdue) )
 					{
 						xTimerStop(xReceivedTask->xTimer, 0); // no block
-						//DebugSafePrint("Task was not overdue yet");
+						SafePrintFromTask(DEBUG_SCHED_CORE,"Task was not overdue yet");
 					}
 
 					DD_TaskListRemoveByHandle(&xActiveTaskList, xReceivedTask);
@@ -129,7 +129,7 @@ void DD_SchedulerTaskFunction( void* pvParameters )
 			/*// This job is currently taking care of as garbage collection by the monitor task and any time the scheduler is invoked
 			case DD_Message_TaskDelete_SporadicOverdue:
 			{
-				DebugSafePrint("Received delete message for overdue sporadic task %s\n", xReceivedTask->sTaskName);
+				SafePrintFromTask(DEBUG_SCHED_CORE,"Received delete message for overdue sporadic task %s\n", xReceivedTask->sTaskName);
 				DD_TaskListRemoveOverdue(&xActiveTaskList, &xOverdueTaskList, xTick); // remove overdue after in case the one we are deleting is overdue
 			}
 			break;
@@ -165,7 +165,7 @@ static void DD_SporadicTaskTimerCallback(TimerHandle_t xTimer)
 	vTaskDelete(ddTaskToDelete->xTask);
 
 	ddTaskToDelete->xStatus = DD_TaskOverdue; // mark it overdue immediately so that we can check this later
-	DebugSafePrint("Aperiodic task %s overdue and killed by scheduler\n", ddTaskToDelete->sTaskName);
+	SafePrintFromTask(DEBUG_SCHED_CORE,"Aperiodic task %s overdue and killed by scheduler\n", ddTaskToDelete->sTaskName);
 
 	// for now, we just let the regular scheduler functionality deal with
 	// garbage-collecting this overdue task into the overdue list
@@ -233,7 +233,7 @@ DD_Status_t	DD_TaskCreate(DD_TaskHandle_t ddTask)
 
 	if (ddTask->xTask == NULL)
 	{
-		DebugSafePrint("Failed to create task %s\n", ddTask->sTaskName);
+		SafePrintFromTask(DEBUG_SCHED_CALL,"Failed to create task %s\n", ddTask->sTaskName);
 		return DD_Failure;
 	}
 
@@ -248,12 +248,12 @@ DD_Status_t	DD_TaskCreate(DD_TaskHandle_t ddTask)
 			.data = (void*)ddTask,
 	};
 
-	DebugSafePrint("Sending TaskCreate message to DD_Scheduler\n");
+	SafePrintFromTask(DEBUG_SCHED_CALL,"Sending TaskCreate message to DD_Scheduler\n");
 	xQueueSend(xMessageQueue, (void*)&message, portMAX_DELAY);
 
 	// Wait for task notification from scheduler
 	ulTaskNotifyTake( pdTRUE, portMAX_DELAY);
-	DebugSafePrint("Received TaskCreate ACK from DD_Scheduler\n");
+	SafePrintFromTask(DEBUG_SCHED_CALL,"Received TaskCreate ACK from DD_Scheduler\n");
 
 	/* NOTE: there really should really be some checks to make sure the operation was successful
 	 * we can do that later
@@ -276,12 +276,12 @@ DD_Status_t 	DD_TaskDelete(DD_TaskHandle_t ddTask)
 		.data = (void*)ddTask,
 	};
 
-	DebugSafePrint("Sending TaskDelete message to scheduler\n");
+	SafePrintFromTask(DEBUG_SCHED_CALL,"Sending TaskDelete message to scheduler\n");
 	xQueueSend(xMessageQueue, (void*)&message, portMAX_DELAY);
 
 	// wait for notification that the operation is finished
 	ulTaskNotifyTake( pdTRUE, portMAX_DELAY );
-	DebugSafePrint("Received TaskDelete ACK from DD_Scheduler\n");
+	SafePrintFromTask(DEBUG_SCHED_CALL,"Received TaskDelete ACK from DD_Scheduler\n");
 
 	// received notification, it is safe to deallocate the task handle
 	// note that deallocating the DD_TaskHandle_t does not deallocate the TaskHandle_t location
@@ -289,7 +289,7 @@ DD_Status_t 	DD_TaskDelete(DD_TaskHandle_t ddTask)
 
 	if ( DD_TaskDealloc(ddTask) != DD_Success )
 	{
-		DebugSafePrint("Task pointers to list not NULL!\n");
+		SafePrintFromTask(DEBUG_SCHED_CALL,"Task pointers to list not NULL!\n");
 		// do it again
 		// this is NOT the optimum solution, its just t prevent overflow
 		// while we debug any reason that might lead to this condition

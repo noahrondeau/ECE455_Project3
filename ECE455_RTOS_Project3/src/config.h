@@ -33,6 +33,9 @@
 
 #define DEBUG_MODE								(0)
 #define MODE_USE_SAFE_PRINT						(1)
+#define DEBUG_LIST								(0)
+#define DEBUG_SCHED_CORE						(1)
+#define DEBUG_SCHED_CALL						(0)
 
 
 /* --------------- USEFUL TYPEDEFS --------------------*/
