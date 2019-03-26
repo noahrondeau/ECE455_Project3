@@ -38,7 +38,7 @@ void SafePrint(bool cond, const char* format, ...)
 #if MODE_ENABLED(MODE_USE_SAFE_PRINT)
 	if (cond)
 	{
-		xSemaphoreTake(xStdoutMutex, (TickType_t)10);
+		xSemaphoreTake(xStdoutMutex, portMAX_DELAY);
 		va_list argptr;
 		va_start(argptr, format);
 		vprintf(format, argptr);
@@ -57,7 +57,7 @@ void __SafePrintFromTask__(const char* func, bool cond, const char* format, ...)
 	{
 		char* sCallingTaskName = pcTaskGetName(xTaskGetCurrentTaskHandle());
 
-		xSemaphoreTake(xStdoutMutex, (TickType_t)10);
+		xSemaphoreTake(xStdoutMutex, portMAX_DELAY);
 
 		printf("%s (%s) :\t", sCallingTaskName, func);
 

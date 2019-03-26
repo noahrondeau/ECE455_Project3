@@ -157,22 +157,46 @@ functionality.
 static void prvSetupHardware( void );
 
 
-void vTestTaskFunction(void* pvParameters);
-void vGeneratorTaskFunction( void* pvParameters);
-void MockTaskListFunction(DD_TaskListHandle_t ActiveList,DD_TaskListHandle_t OverdueList);
+void vTestPeriodic1(void* pvParameters);
+void vTestPeriodic2(void* pvParameters);
+void vTestAperiodic1(void* pvParameters);
+void vGenPeriodic1( void* pvParameters);
+void vGenPeriodic2( void* pvParameters);
+void vGenAperiodic1( void* pvParameters);
+void vMonitorTask(void* pvParameters);
 
-TaskHandle_t xQueueTest;
-TaskHandle_t xDummyTask;
+TaskHandle_t xGenPeriodic1Handle;
+TaskHandle_t xGenPeriodic2Handle;
+TaskHandle_t xGenAperiodic1Handle;
+
+#define P1_PERIOD	(10000)
+#define P1_EXEC	(4000)
+#define P1_LED_RATE (250)
+
+#define P2_PERIOD (20000)
+#define P2_EXEC	(7500)
+#define P2_LED_RATE (500)
+
+#define A1_DEAD	(10000)
+#define A1_EXEC	(5000)
+#define A1_LED_RATE	(50)
 
 /*-----------------------------------------------------------*/
 
 int main(void)
 {
 	prvSetupHardware();
+	STM_EVAL_PBInit(BUTTON_USER, BUTTON_MODE_EXTI);
+	NVIC_SetPriority(USER_BUTTON_EXTI_IRQn, 6);
+	STM_EVAL_LEDInit(LED4);
+	STM_EVAL_LEDInit(LED5);
+	STM_EVAL_LEDInit(LED6);
 	SafePrintInit();
 
 	/* Start the tasks and timer running. */
-	xTaskCreate(vGeneratorTaskFunction, "GeneratorTask", configMINIMAL_STACK_SIZE, NULL, DD_TASK_GEN_PRIORITY_MIN, NULL);
+	xTaskCreate(vGenPeriodic1, "PG1", configMINIMAL_STACK_SIZE, NULL, DD_TASK_GEN_PRIORITY_PERIODIC, &xGenPeriodic1Handle);
+	xTaskCreate(vGenPeriodic2, "PG2", configMINIMAL_STACK_SIZE, NULL, DD_TASK_GEN_PRIORITY_PERIODIC, &xGenPeriodic2Handle);
+	xTaskCreate(vGenAperiodic1, "AG1", configMINIMAL_STACK_SIZE, NULL, DD_TASK_GEN_PRIORITY_APERIODIC, &xGenAperiodic1Handle);
 	DD_SchedulerStart(); // starts the DD_Scheduler and the FreeRTOS scheduler
 
 
@@ -182,36 +206,167 @@ int main(void)
 
 /*-----------------------------------------------------------*/
 
+// push button
+void EXTI0_IRQHandler(void)
+{
+	/* Make sure that interrupt flag is set */
+	if (EXTI_GetITStatus(EXTI_Line0) != RESET)
+	{
+		EXTI_ClearITPendingBit(EXTI_Line0);
+		STM_EVAL_LEDToggle(LED4);
+		BaseType_t xHigherPriorityTaskWoken = pdFALSE;
+		vTaskNotifyGiveFromISR(xGenAperiodic1Handle, &xHigherPriorityTaskWoken);
+		portYIELD_FROM_ISR( xHigherPriorityTaskWoken );
+	}
+}
 
 
 
 /*-----------------------------------------------------------*/
 //TEST TASKS
-void vTestTaskFunction(void* pvParameters)
+void vTestPeriodic1(void* pvParameters)
 {
 	// get self item from params
 	DD_TaskHandle_t ddSelf = (DD_TaskHandle_t)pvParameters;
 
+	TickType_t xTickCurr;
+	TickType_t xTickPrev;
 	while(1)
 	{
-		vTaskDelay(2500); // delay 5s to see effect
-		DebugSafePrint("Running the task then deleting myself!\n", ddSelf->sTaskName);
-		vTaskDelay(2500);
-		DD_TaskDelete(ddSelf);
+		xTickCurr = xTaskGetTickCount();
+		if ( xTickCurr <= ddSelf->xCreationTime + P1_EXEC)
+		{
+			if (xTickCurr != xTickPrev)
+			{
+				if (xTickCurr % P1_LED_RATE == 0)
+				{
+					STM_EVAL_LEDToggle(LED5);
+				}
+			}
+		}
+		else
+		{
+			//Test the removal by having task 1 never delete itself
+			STM_EVAL_LEDOff(LED5);
+			DD_TaskDelete(ddSelf);
+		}
+
+		xTickPrev = xTickCurr;
 	}
 }
 
-void vGeneratorTaskFunction( void* pvParameters)
+void vTestPeriodic2(void* pvParameters)
+{
+	// get self item from params
+	DD_TaskHandle_t ddSelf = (DD_TaskHandle_t)pvParameters;
+
+	TickType_t xTickCurr;
+	TickType_t xTickPrev;
+	while(1)
+	{
+		xTickCurr = xTaskGetTickCount();
+		if ( xTickCurr <= ddSelf->xCreationTime + P2_EXEC )
+		{
+			if (xTickCurr != xTickPrev)
+			{
+				if (xTickCurr % P2_LED_RATE == 0)
+				{
+					STM_EVAL_LEDToggle(LED6);
+				}
+			}
+		}
+		else
+		{
+			STM_EVAL_LEDOff(LED6);
+			DD_TaskDelete(ddSelf);
+		}
+
+		xTickPrev = xTickCurr;
+	}
+}
+
+void vTestAperiodic1(void* pvParameters)
+{
+	// get self item from params
+	DD_TaskHandle_t ddSelf = (DD_TaskHandle_t)pvParameters;
+
+	TickType_t xTickCurr;
+	TickType_t xTickPrev;
+	while(1)
+	{
+		xTickCurr = xTaskGetTickCount();
+		if ( xTickCurr <= ddSelf->xCreationTime + A1_EXEC)
+		{
+			if (xTickCurr != xTickPrev)
+			{
+				if (xTickCurr % A1_LED_RATE == 0)
+				{
+					STM_EVAL_LEDToggle(LED4);
+				}
+			}
+		}
+		else
+		{
+			STM_EVAL_LEDOff(LED4);
+			DD_TaskDelete(ddSelf);
+		}
+
+		xTickPrev = xTickCurr;
+	}
+}
+
+// period: 5000
+// deadline: 5000
+// exec: 2500
+void vGenPeriodic1( void* pvParameters)
 {
 	while(1)
 	{
 		DD_TaskHandle_t ddTestTask = DD_TaskAlloc();
-		ddTestTask->sTaskName = "TestTask";
-		ddTestTask->xFunction = vTestTaskFunction;
-		ddTestTask->xRelDeadline = 1000;
+		ddTestTask->sTaskName = "P1";
+		ddTestTask->xFunction = vTestPeriodic1;
+		ddTestTask->xRelDeadline = P1_PERIOD;
+		ddTestTask->xTaskType = DD_TaskPeriodic;
 
 		DD_TaskCreate(ddTestTask);
-		vTaskDelay(30000);// wait another 25 s before running again
+		vTaskDelay(P1_PERIOD);// wait another 25 s before running again
+	}
+}
+
+// period: 10000
+// deadline: 10000
+// exec: 5000
+void vGenPeriodic2( void* pvParameters)
+{
+	while(1)
+	{
+		vTaskDelay(6000); // release 1 second after task 1 becomes overdue
+		DD_TaskHandle_t ddTestTask = DD_TaskAlloc();
+		ddTestTask->sTaskName = "P2";
+		ddTestTask->xFunction = vTestPeriodic2;
+		ddTestTask->xRelDeadline = P2_PERIOD;
+		ddTestTask->xTaskType = DD_TaskPeriodic;
+
+		DD_TaskCreate(ddTestTask);
+		vTaskDelay(P2_PERIOD);// wait another 25 s before running again
+	}
+}
+
+// deadline: 2500
+// exec: 2000
+void vGenAperiodic1( void* pvParameters) // Deferred ISR handler
+{
+	while(1)
+	{
+		ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
+
+		DD_TaskHandle_t ddTestTask = DD_TaskAlloc();
+		ddTestTask->sTaskName = "A1";
+		ddTestTask->xFunction = vTestAperiodic1;
+		ddTestTask->xRelDeadline = A1_DEAD;
+		ddTestTask->xTaskType = DD_TaskSporadic;
+
+		DD_TaskCreate(ddTestTask);
 	}
 }
 

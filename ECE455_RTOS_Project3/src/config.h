@@ -32,8 +32,11 @@
 #define MODE_DISABLED(__m__)		((__m__) == DISABLE)
 
 
-#define DEBUG_MODE								(ENABLE)
-#define MODE_USE_SAFE_PRINT						(ENABLE)
+#define DEBUG_MODE								(0)
+#define MODE_USE_SAFE_PRINT						(1)
+#define DEBUG_LIST								(0)
+#define DEBUG_SCHED_CORE						(0)
+#define DEBUG_SCHED_CALL						(1)
 
 
 /* --------------- USEFUL TYPEDEFS --------------------*/

@@ -16,14 +16,24 @@ typedef enum DD_TaskStatus_t
 {
 	DD_TaskUninitialized,
 	DD_TaskActive,
+	DD_TaskDeleted,
 	DD_TaskOverdue,
 } DD_TaskStatus_t;
+
+typedef enum DD_TaskType_t
+{
+	DD_TaskUnclassified,
+	DD_TaskPeriodic,
+	DD_TaskSporadic,
+} DD_TaskType_t;
 
 
 typedef struct DD_Task_t
 {
 	TaskHandle_t 		xTask;
+	DD_TaskType_t		xTaskType;
 	TaskFunction_t 		xFunction;
+	TimerHandle_t		xTimer;
 	TickType_t			xCreationTime;
 	TickType_t			xRelDeadline;
 	TickType_t			xAbsDeadline;
@@ -70,7 +80,7 @@ u32						DD_TaskListGetSize(DD_TaskListHandle_t list);
 bool					DD_TaskListIsEmpty(DD_TaskListHandle_t list);
 DD_Status_t				DD_TaskListInsertByDeadline(DD_TaskListHandle_t list, DD_TaskHandle_t ddTask);
 DD_Status_t				DD_TaskListRemoveByHandle(DD_TaskListHandle_t list, DD_TaskHandle_t ddTask);
-DD_TaskList_t			DD_TaskListRemoveOverdue(DD_TaskListHandle_t list, TickType_t currentTime);
+DD_Status_t				DD_TaskListRemoveOverdue(DD_TaskListHandle_t active, DD_TaskListHandle_t overdue, TickType_t currentTime);
 DD_Status_t				DD_TaskListConcatenate(DD_TaskListHandle_t list1, DD_TaskListHandle_t list2);
 char*					DD_TaskListDataReturn(DD_TaskListHandle_t list);
 
