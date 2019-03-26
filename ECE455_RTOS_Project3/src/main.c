@@ -167,15 +167,23 @@ void vMonitorTask(void* pvParameters);
 
 TaskHandle_t xGenPeriodic1Handle;
 TaskHandle_t xGenPeriodic2Handle;
+TaskHandle_t xGenPeriodic3Handle;
 TaskHandle_t xGenAperiodic1Handle;
 
+// This task uses its exec time fully
 #define P1_PERIOD	(10000)
 #define P1_EXEC	(4000)
 #define P1_LED_RATE (250)
 
+// This task uses its exec time fully
 #define P2_PERIOD (20000)
 #define P2_EXEC	(7500)
 #define P2_LED_RATE (500)
+
+// This task delays for twice its period and will be overdue
+#define P3_PERIOD (10000)
+//#define P2_EXEC	(0)
+//#define P2_LED_RATE (500)
 
 #define A1_DEAD	(10000)
 #define A1_EXEC	(5000)
@@ -188,6 +196,7 @@ int main(void)
 	prvSetupHardware();
 	STM_EVAL_PBInit(BUTTON_USER, BUTTON_MODE_EXTI);
 	NVIC_SetPriority(USER_BUTTON_EXTI_IRQn, 6);
+	STM_EVAL_LEDInit(LED3);
 	STM_EVAL_LEDInit(LED4);
 	STM_EVAL_LEDInit(LED5);
 	STM_EVAL_LEDInit(LED6);
@@ -196,6 +205,7 @@ int main(void)
 	/* Start the tasks and timer running. */
 	xTaskCreate(vGenPeriodic1, "PG1", configMINIMAL_STACK_SIZE, NULL, DD_TASK_GEN_PRIORITY_PERIODIC, &xGenPeriodic1Handle);
 	xTaskCreate(vGenPeriodic2, "PG2", configMINIMAL_STACK_SIZE, NULL, DD_TASK_GEN_PRIORITY_PERIODIC, &xGenPeriodic2Handle);
+	xTaskCreate(vGenPeriodic2, "PG3", configMINIMAL_STACK_SIZE, NULL, DD_TASK_GEN_PRIORITY_PERIODIC, &xGenPeriodic3Handle);
 	xTaskCreate(vGenAperiodic1, "AG1", configMINIMAL_STACK_SIZE, NULL, DD_TASK_GEN_PRIORITY_APERIODIC, &xGenAperiodic1Handle);
 	DD_SchedulerStart(); // starts the DD_Scheduler and the FreeRTOS scheduler
 
@@ -285,6 +295,21 @@ void vTestPeriodic2(void* pvParameters)
 	}
 }
 
+void vTestPeriodic3(void* pvParameters)
+{
+	// get self item from params
+	DD_TaskHandle_t ddSelf = (DD_TaskHandle_t)pvParameters;
+
+	TickType_t xTickCurr;
+	TickType_t xTickPrev;
+	while(1)
+	{
+		STM_EVAL_LEDToggle(LED3);
+		vTaskDelay(2*P3_PERIOD);
+		DD_TaskDelete(ddSelf);
+	}
+}
+
 void vTestAperiodic1(void* pvParameters)
 {
 	// get self item from params
@@ -340,7 +365,6 @@ void vGenPeriodic2( void* pvParameters)
 {
 	while(1)
 	{
-		vTaskDelay(6000); // release 1 second after task 1 becomes overdue
 		DD_TaskHandle_t ddTestTask = DD_TaskAlloc();
 		ddTestTask->sTaskName = "P2";
 		ddTestTask->xFunction = vTestPeriodic2;
@@ -349,6 +373,21 @@ void vGenPeriodic2( void* pvParameters)
 
 		DD_TaskCreate(ddTestTask);
 		vTaskDelay(P2_PERIOD);// wait another 25 s before running again
+	}
+}
+
+void vGenPeriodic3( void* pvParameters)
+{
+	while(1)
+	{
+		DD_TaskHandle_t ddTestTask = DD_TaskAlloc();
+		ddTestTask->sTaskName = "P3";
+		ddTestTask->xFunction = vTestPeriodic2;
+		ddTestTask->xRelDeadline = P3_PERIOD;
+		ddTestTask->xTaskType = DD_TaskPeriodic;
+
+		DD_TaskCreate(ddTestTask);
+		vTaskDelay(P3_PERIOD);// wait another 25 s before running again
 	}
 }
 
