@@ -291,26 +291,7 @@ DD_Status_t	DD_TaskListRemoveByHandle(DD_TaskListHandle_t list, DD_TaskHandle_t 
 	return DD_Success;
 }
 
-/*
-// append list2 to list1
-DD_Status_t	DD_TaskListConcatenate(DD_TaskListHandle_t list1, DD_TaskListHandle_t list2)
-{
-	if (list1 == NULL || list2 == NULL)
-		return DD_Argument_Null;
 
-	list1->uSize += list2->uSize;
-
-	list1->pTail->pNext = list2->pHead;
-	list2->pHead->pPrev = list1->pTail;
-	list1->pTail = list2->pTail;
-
-	return DD_Success;
-}*/
-
-DD_Status_t DD_TaskListInsertBack(DD_TaskListHandle_t list, DD_TaskHandle_t task)
-{
-	return DD_Success;
-}
 
 char* DD_TaskListDataReturn(DD_TaskListHandle_t list)
 {
