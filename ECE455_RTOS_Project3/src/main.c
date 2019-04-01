@@ -300,8 +300,8 @@ void vTestPeriodic3(void* pvParameters)
 	// get self item from params
 	DD_TaskHandle_t ddSelf = (DD_TaskHandle_t)pvParameters;
 
-	TickType_t xTickCurr;
-	TickType_t xTickPrev;
+	//TickType_t xTickCurr;
+	//TickType_t xTickPrev;
 	while(1)
 	{
 		STM_EVAL_LEDToggle(LED3);
