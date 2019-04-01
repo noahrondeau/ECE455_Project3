@@ -385,9 +385,14 @@ DD_Status_t DD_TaskListRemoveOverdue(DD_TaskListHandle_t active, DD_TaskListHand
 		// if the task has a resource, then this is still safe
 		// since the idle task cleans up resources
 		SafePrintFromTask(DEBUG_LIST, "Task %s is overdue\n", pIter->sTaskName);
-		vTaskSuspend(pIter->xTask);
-		vTaskDelete(pIter->xTask);
+
+		if (pIter->xTask != NULL)// equivalent to pIter->xStatus != DD_TaskOverdue
+		{	// if its already null, then it was killed by the software callback
+			vTaskSuspend(pIter->xTask);
+			vTaskDelete(pIter->xTask);
+		}
 		pIter->xStatus = DD_TaskOverdue;
+
 		pCurr = pIter; // keep a reference to the current one
 		pIter = pIter->pNext; // move the next pointer to the next one
 

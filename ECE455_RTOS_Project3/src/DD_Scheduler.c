@@ -126,7 +126,9 @@ void DD_SchedulerTaskFunction( void* pvParameters )
 					if (	(xReceivedTask->xTaskType == DD_TaskSporadic)
 							&& (xReceivedTask->xStatus != DD_TaskOverdue) )
 					{
-						xTimerStop(xReceivedTask->xTimer, 0); // no block
+						if ( xReceivedTask->xTimer != NULL)
+							xTimerStop(xReceivedTask->xTimer, 0); // no block
+
 						SafePrintFromTask(DEBUG_SCHED_CORE,"Task was not overdue yet");
 					}
 
@@ -220,8 +222,11 @@ static void DD_SporadicTaskTimerCallback(TimerHandle_t xTimer)
 	ddTaskToDelete->xTimer = NULL;
 
 	// immediately suspend and delete the overdue task
-	vTaskSuspend(ddTaskToDelete->xTask);
-	vTaskDelete(ddTaskToDelete->xTask);
+	if (ddTaskToDelete->xTask != NULL)
+	{
+		vTaskSuspend(ddTaskToDelete->xTask);
+		vTaskDelete(ddTaskToDelete->xTask);
+	}
 
 	ddTaskToDelete->xStatus = DD_TaskOverdue; // mark it overdue immediately so that we can check this later
 	SafePrintFromTask(DEBUG_SCHED_CORE,"Aperiodic task %s overdue and killed by scheduler\n", ddTaskToDelete->sTaskName);
