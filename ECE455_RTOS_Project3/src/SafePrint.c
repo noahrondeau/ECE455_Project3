@@ -58,10 +58,11 @@ void __SafePrintFromTask__(const char* func, bool cond, const char* format, ...)
 	if (cond)
 	{
 		char* sCallingTaskName = pcTaskGetName(xTaskGetCurrentTaskHandle());
+		TickType_t xTime = xTaskGetTickCount();
 
 		xSemaphoreTake(xStdoutMutex, portMAX_DELAY);
 
-		printf("%s (%s) :\t", sCallingTaskName, func);
+		printf("%s\t(%s)\t(t=%d):\t", sCallingTaskName, func, (i32)xTime);
 
 		va_list argptr;
 		va_start(argptr, format);

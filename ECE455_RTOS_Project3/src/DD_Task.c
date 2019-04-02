@@ -327,8 +327,8 @@ char* DD_TaskListDataReturn(DD_TaskListHandle_t list)
 				break;
 		}
 
-		if (pAux->xStatus != DD_TaskUninitialized)
-		{
+		//if (pAux->xStatus != DD_TaskUninitialized)
+		//{
 			sprintf(buffer,
 					"Task: %s\tPriority: %d\tAbs Deadline: %u\tStatus: %s\n",
 					(pAux->sTaskName),
@@ -337,7 +337,7 @@ char* DD_TaskListDataReturn(DD_TaskListHandle_t list)
 					temp1);
 
 			strcat(data,buffer);
-		}
+		//}
 
 		hfDebug++;
 		pAux = pAux->pNext;
@@ -373,13 +373,13 @@ DD_Status_t DD_TaskListRemoveOverdue(DD_TaskListHandle_t active, DD_TaskListHand
 		// since the idle task cleans up resources
 		SafePrintFromTask(DEBUG_LIST, "Task %s is overdue\n", pIter->sTaskName);
 
-		if (pIter->xTask != NULL)// equivalent to pIter->xStatus != DD_TaskOverdue
+		if (pIter->xStatus != DD_TaskOverdue)// equivalent to pIter->xStatus != DD_TaskOverdue
 		{	// if its already null, then it was killed by the software callback
 			SafePrintFromTask(DEBUG_LIST, "Task %s handle not null, deleting task\n", pIter->sTaskName);
 			vTaskSuspend(pIter->xTask);
 			vTaskDelete(pIter->xTask);
+			pIter->xStatus = DD_TaskOverdue;
 		}
-		pIter->xStatus = DD_TaskOverdue;
 
 		pCurr = pIter; // keep a reference to the current one
 		pIter = pIter->pNext; // move the next pointer to the next one

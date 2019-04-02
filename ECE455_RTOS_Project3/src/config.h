@@ -37,6 +37,8 @@
 #define DEBUG_LIST								(0)
 #define DEBUG_SCHED_CORE						(0)
 #define DEBUG_SCHED_CALL						(0)
+#define DEBUG_SCHED_CALL_SEND					(1)
+#define DEBUG_SCHED_CALL_ACK					(0)
 
 
 /* --------------- USEFUL TYPEDEFS --------------------*/

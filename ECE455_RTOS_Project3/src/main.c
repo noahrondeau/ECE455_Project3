@@ -207,7 +207,7 @@ int main(void)
 	/* Start the tasks and timer running. */
 	xTaskCreate(vGenPeriodic1, "PG1", configMINIMAL_STACK_SIZE, NULL, DD_TASK_GEN_PRIORITY_PERIODIC, &xGenPeriodic1Handle);
 	xTaskCreate(vGenPeriodic2, "PG2", configMINIMAL_STACK_SIZE, NULL, DD_TASK_GEN_PRIORITY_PERIODIC, &xGenPeriodic2Handle);
-	xTaskCreate(vGenPeriodic3, "PG3", configMINIMAL_STACK_SIZE, NULL, DD_TASK_GEN_PRIORITY_PERIODIC, &xGenPeriodic3Handle);
+	//xTaskCreate(vGenPeriodic3, "PG3", configMINIMAL_STACK_SIZE, NULL, DD_TASK_GEN_PRIORITY_PERIODIC, &xGenPeriodic3Handle);
 	xTaskCreate(vGenAperiodic1, "AG1", configMINIMAL_STACK_SIZE, NULL, DD_TASK_GEN_PRIORITY_APERIODIC, &xGenAperiodic1Handle);
 	DD_SchedulerStart(); // starts the DD_Scheduler and the FreeRTOS scheduler
 
@@ -241,59 +241,68 @@ void vTestPeriodic1(void* pvParameters)
 	// get self item from params
 	DD_TaskHandle_t ddSelf = (DD_TaskHandle_t)pvParameters;
 
+	TickType_t xExecTimeRemaining = P1_EXEC;
+	TickType_t xTickPrev = xTaskGetTickCount();
 	TickType_t xTickCurr;
-	TickType_t xTickPrev;
+
 	while(1)
 	{
-		xTickCurr = xTaskGetTickCount();
-		if ( xTickCurr <= ddSelf->xCreationTime + P1_EXEC)
+
+		while(xExecTimeRemaining > 0)
 		{
+			xTickCurr = xTaskGetTickCount();
+
 			if (xTickCurr != xTickPrev)
 			{
+				xExecTimeRemaining--;
+
 				if (xTickCurr % P1_LED_RATE == 0)
 				{
 					STM_EVAL_LEDToggle(LED5);
 				}
 			}
-		}
-		else
-		{
-			//Test the removal by having task 1 never delete itself
-			STM_EVAL_LEDOff(LED5);
-			DD_TaskDelete(ddSelf);
+
+			xTickPrev = xTickCurr;
+
 		}
 
-		xTickPrev = xTickCurr;
+		STM_EVAL_LEDOff(LED5);
+		DD_TaskDelete(ddSelf);
 	}
 }
 
-void vTestPeriodic2(void* pvParameters)
+void vTestPeriodic2(void* pvParameters) // led 6
 {
 	// get self item from params
 	DD_TaskHandle_t ddSelf = (DD_TaskHandle_t)pvParameters;
 
+	TickType_t xExecTimeRemaining = P2_EXEC;
+	TickType_t xTickPrev = xTaskGetTickCount();
 	TickType_t xTickCurr;
-	TickType_t xTickPrev;
+
 	while(1)
 	{
-		xTickCurr = xTaskGetTickCount();
-		if ( xTickCurr <= ddSelf->xCreationTime + P2_EXEC )
+
+		while(xExecTimeRemaining > 0)
 		{
+			xTickCurr = xTaskGetTickCount();
+
 			if (xTickCurr != xTickPrev)
 			{
+				xExecTimeRemaining--;
+
 				if (xTickCurr % P2_LED_RATE == 0)
 				{
 					STM_EVAL_LEDToggle(LED6);
 				}
 			}
-		}
-		else
-		{
-			STM_EVAL_LEDOff(LED6);
-			DD_TaskDelete(ddSelf);
+
+			xTickPrev = xTickCurr;
+
 		}
 
-		xTickPrev = xTickCurr;
+		STM_EVAL_LEDOff(LED6);
+		DD_TaskDelete(ddSelf);
 	}
 }
 
@@ -312,33 +321,38 @@ void vTestPeriodic3(void* pvParameters)
 	}
 }
 
-void vTestAperiodic1(void* pvParameters)
+void vTestAperiodic1(void* pvParameters) // LED4
 {
 	// get self item from params
 	DD_TaskHandle_t ddSelf = (DD_TaskHandle_t)pvParameters;
 
+	TickType_t xExecTimeRemaining = A1_EXEC;
+	TickType_t xTickPrev = xTaskGetTickCount();
 	TickType_t xTickCurr;
-	TickType_t xTickPrev;
+
 	while(1)
 	{
-		xTickCurr = xTaskGetTickCount();
-		if ( xTickCurr <= ddSelf->xCreationTime + A1_EXEC)
+
+		while(xExecTimeRemaining > 0)
 		{
+			xTickCurr = xTaskGetTickCount();
+
 			if (xTickCurr != xTickPrev)
 			{
+				xExecTimeRemaining--;
+
 				if (xTickCurr % A1_LED_RATE == 0)
 				{
 					STM_EVAL_LEDToggle(LED4);
 				}
 			}
-		}
-		else
-		{
-			STM_EVAL_LEDOff(LED4);
-			DD_TaskDelete(ddSelf);
+
+			xTickPrev = xTickCurr;
+
 		}
 
-		xTickPrev = xTickCurr;
+		STM_EVAL_LEDOff(LED4);
+		DD_TaskDelete(ddSelf);
 	}
 }
 
