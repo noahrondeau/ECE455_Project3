@@ -23,6 +23,7 @@ void SafePrintInit(void)
 #if MODE_ENABLED(MODE_USE_SAFE_PRINT)
 
 	xStdoutMutex = xSemaphoreCreateMutex();
+	/*
 	if (xStdoutMutex == NULL)
 		printf("xStdoutMutex could not be allocated\n");
 
@@ -30,6 +31,7 @@ void SafePrintInit(void)
 		printf("xStdoutMutex successfully created\n");
 
 	fflush(stdout);
+	*/
 #endif
 }
 

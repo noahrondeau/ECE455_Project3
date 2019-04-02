@@ -224,6 +224,7 @@ static void DD_SporadicTaskTimerCallback(TimerHandle_t xTimer)
 	// immediately suspend and delete the overdue task
 	if (ddTaskToDelete->xTask != NULL)
 	{
+		SafePrintFromTask(DEBUG_SCHED_CORE, "Task %s handle not null, deleting task\n", ddTaskToDelete->sTaskName);
 		vTaskSuspend(ddTaskToDelete->xTask);
 		vTaskDelete(ddTaskToDelete->xTask);
 	}
@@ -350,7 +351,9 @@ DD_Status_t 	DD_TaskDelete(DD_TaskHandle_t ddTask)
 	// received notification, it is safe to deallocate the task handle
 	// note that deallocating the DD_TaskHandle_t does not deallocate the TaskHandle_t location
 	// allocated by xTaskCreate
+	DD_TaskDealloc(ddTask);
 
+	/*
 	if ( DD_TaskDealloc(ddTask) != DD_Success )
 	{
 		SafePrintFromTask(DEBUG_SCHED_CALL,"Task pointers to list not NULL!\n");
@@ -360,7 +363,7 @@ DD_Status_t 	DD_TaskDelete(DD_TaskHandle_t ddTask)
 		ddTask->pNext = NULL;
 		ddTask->pPrev = NULL;
 		DD_TaskDealloc(ddTask);
-	}
+	}*/
 
 	// task deletes itself
 	vTaskDelete(NULL);
@@ -391,7 +394,7 @@ DD_Status_t		DD_ReturnActiveList(void)
 	    {
 	        if( xQueueSend( xMessageQueue,
 	                       ( void * ) &xActiveRequest,
-	                       ( TickType_t ) 10 ) != pdPASS )
+	                       portMAX_DELAY ) != pdPASS )
 	        {
 	        	SafePrintFromTask(DEBUG_SCHED_CALL, "Timed out on message queue\n");
 	            return DD_Message_Send_Fail;
@@ -404,7 +407,10 @@ DD_Status_t		DD_ReturnActiveList(void)
 	        {
 	        	SafePrintFromTask(DEBUG_SCHED_CALL, "Received active list\n");
 	        	SafePrint(true,"Active Task List:\n%s\n",(char*)(xActiveRequest.data));
-	        	vPortFree(xActiveRequest.data);
+
+	        	if (xActiveRequest.data != NULL)
+	        		vPortFree(xActiveRequest.data);
+
 	        	xActiveRequest.data = NULL;
 	        }
 	    }
@@ -426,7 +432,7 @@ DD_Status_t		DD_ReturnOverdueList(void)
 	    {
 	        if( xQueueSend( xMessageQueue,
 	                       ( void * ) &xOverdueRequest,
-	                       ( TickType_t ) 10 ) != pdPASS )
+	                       portMAX_DELAY ) != pdPASS )
 	        {
 	        	SafePrintFromTask(DEBUG_SCHED_CALL, "Timed out on message queue\n");
 	            return DD_Message_Send_Fail;
@@ -439,7 +445,10 @@ DD_Status_t		DD_ReturnOverdueList(void)
 	        {
 	        	SafePrintFromTask(DEBUG_SCHED_CALL, "Received overdue list\n");
 	        	SafePrint(true,"Overdue Task List:\n%s\n",(char*)(xOverdueRequest.data));
-	        	vPortFree(xOverdueRequest.data);
+
+	        	if ( xOverdueRequest.data != NULL)
+	        		vPortFree(xOverdueRequest.data);
+
 	        	xOverdueRequest.data = NULL;
 	        }
 	    }
