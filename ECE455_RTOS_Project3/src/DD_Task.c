@@ -405,6 +405,11 @@ DD_Status_t DD_TaskListRemoveOverdue(DD_TaskListHandle_t active, DD_TaskListHand
 		active->uSize--;
 
 		// add to overdue
+		// its always going to the end of the list
+
+		if (overdue->pTail != NULL )
+			overdue->pTail->pNext = pCurr;
+
 		pCurr->pPrev = overdue->pTail;
 		overdue->pTail = pCurr;
 

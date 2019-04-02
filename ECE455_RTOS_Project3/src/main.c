@@ -159,9 +159,11 @@ static void prvSetupHardware( void );
 
 void vTestPeriodic1(void* pvParameters);
 void vTestPeriodic2(void* pvParameters);
+void vTestPeriodic3(void* pvParameters);
 void vTestAperiodic1(void* pvParameters);
 void vGenPeriodic1( void* pvParameters);
 void vGenPeriodic2( void* pvParameters);
+void vGenPeriodic3( void* pvParameters);
 void vGenAperiodic1( void* pvParameters);
 void vMonitorTask(void* pvParameters);
 
@@ -205,7 +207,7 @@ int main(void)
 	/* Start the tasks and timer running. */
 	xTaskCreate(vGenPeriodic1, "PG1", configMINIMAL_STACK_SIZE, NULL, DD_TASK_GEN_PRIORITY_PERIODIC, &xGenPeriodic1Handle);
 	xTaskCreate(vGenPeriodic2, "PG2", configMINIMAL_STACK_SIZE, NULL, DD_TASK_GEN_PRIORITY_PERIODIC, &xGenPeriodic2Handle);
-	xTaskCreate(vGenPeriodic2, "PG3", configMINIMAL_STACK_SIZE, NULL, DD_TASK_GEN_PRIORITY_PERIODIC, &xGenPeriodic3Handle);
+	xTaskCreate(vGenPeriodic3, "PG3", configMINIMAL_STACK_SIZE, NULL, DD_TASK_GEN_PRIORITY_PERIODIC, &xGenPeriodic3Handle);
 	xTaskCreate(vGenAperiodic1, "AG1", configMINIMAL_STACK_SIZE, NULL, DD_TASK_GEN_PRIORITY_APERIODIC, &xGenAperiodic1Handle);
 	DD_SchedulerStart(); // starts the DD_Scheduler and the FreeRTOS scheduler
 
@@ -382,7 +384,7 @@ void vGenPeriodic3( void* pvParameters)
 	{
 		DD_TaskHandle_t ddTestTask = DD_TaskAlloc();
 		ddTestTask->sTaskName = "P3";
-		ddTestTask->xFunction = vTestPeriodic2;
+		ddTestTask->xFunction = vTestPeriodic3;
 		ddTestTask->xRelDeadline = P3_PERIOD;
 		ddTestTask->xTaskType = DD_TaskPeriodic;
 
