@@ -173,7 +173,7 @@ TaskHandle_t xGenPeriodic3Handle;
 TaskHandle_t xGenAperiodic1Handle;
 
 // This task uses its exec time fully
-#define P1_PERIOD	(500)
+#define P1_PERIOD	(250)
 #define P1_EXEC	(95)
 #define P1_LED_RATE (5)
 
