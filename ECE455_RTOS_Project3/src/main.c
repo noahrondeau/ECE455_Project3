@@ -173,19 +173,19 @@ TaskHandle_t xGenPeriodic3Handle;
 TaskHandle_t xGenAperiodic1Handle;
 
 // This task uses its exec time fully
-#define P1_PERIOD	(250)
-#define P1_EXEC	(95)
-#define P1_LED_RATE (5)
+#define P1_PERIOD	(500)
+#define P1_EXEC	(100)
+#define P1_LED_RATE (25)
 
 // This task uses its exec time fully
 #define P2_PERIOD (500)
-#define P2_EXEC	(150)
-#define P2_LED_RATE (25)
+#define P2_EXEC	(200)
+#define P2_LED_RATE (50)
 
 // This task delays for twice its period and will be overdue
-#define P3_PERIOD (750)
-#define P3_EXEC	(250)
-#define P3_LED_RATE (125)
+#define P3_PERIOD (500)
+#define P3_EXEC	(200)
+#define P3_LED_RATE (100)
 
 #define A1_DEAD	(10000)
 #define A1_EXEC	(5000)
