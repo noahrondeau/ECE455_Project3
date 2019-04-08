@@ -173,19 +173,19 @@ TaskHandle_t xGenPeriodic3Handle;
 TaskHandle_t xGenAperiodic1Handle;
 
 // This task uses its exec time fully
-#define P1_PERIOD	(10000)
-#define P1_EXEC	(4000)
-#define P1_LED_RATE (250)
+#define P1_PERIOD	(500)
+#define P1_EXEC	(95)
+#define P1_LED_RATE (5)
 
 // This task uses its exec time fully
-#define P2_PERIOD (20000)
-#define P2_EXEC	(7500)
-#define P2_LED_RATE (500)
+#define P2_PERIOD (500)
+#define P2_EXEC	(150)
+#define P2_LED_RATE (25)
 
 // This task delays for twice its period and will be overdue
-#define P3_PERIOD (10000)
-//#define P2_EXEC	(0)
-//#define P2_LED_RATE (500)
+#define P3_PERIOD (750)
+#define P3_EXEC	(250)
+#define P3_LED_RATE (125)
 
 #define A1_DEAD	(10000)
 #define A1_EXEC	(5000)
@@ -207,7 +207,7 @@ int main(void)
 	/* Start the tasks and timer running. */
 	xTaskCreate(vGenPeriodic1, "PG1", configMINIMAL_STACK_SIZE, NULL, DD_TASK_GEN_PRIORITY_PERIODIC, &xGenPeriodic1Handle);
 	xTaskCreate(vGenPeriodic2, "PG2", configMINIMAL_STACK_SIZE, NULL, DD_TASK_GEN_PRIORITY_PERIODIC, &xGenPeriodic2Handle);
-	//xTaskCreate(vGenPeriodic3, "PG3", configMINIMAL_STACK_SIZE, NULL, DD_TASK_GEN_PRIORITY_PERIODIC, &xGenPeriodic3Handle);
+	xTaskCreate(vGenPeriodic3, "PG3", configMINIMAL_STACK_SIZE, NULL, DD_TASK_GEN_PRIORITY_PERIODIC, &xGenPeriodic3Handle);
 	xTaskCreate(vGenAperiodic1, "AG1", configMINIMAL_STACK_SIZE, NULL, DD_TASK_GEN_PRIORITY_APERIODIC, &xGenAperiodic1Handle);
 	DD_SchedulerStart(); // starts the DD_Scheduler and the FreeRTOS scheduler
 
@@ -308,6 +308,7 @@ void vTestPeriodic2(void* pvParameters) // led 6
 
 void vTestPeriodic3(void* pvParameters)
 {
+	/*
 	// get self item from params
 	DD_TaskHandle_t ddSelf = (DD_TaskHandle_t)pvParameters;
 
@@ -317,6 +318,39 @@ void vTestPeriodic3(void* pvParameters)
 	{
 		STM_EVAL_LEDToggle(LED3);
 		vTaskDelay(2*P3_PERIOD);
+		DD_TaskDelete(ddSelf);
+	}
+	*/
+
+	// get self item from params
+	DD_TaskHandle_t ddSelf = (DD_TaskHandle_t)pvParameters;
+
+	TickType_t xExecTimeRemaining = P3_EXEC;
+	TickType_t xTickPrev = xTaskGetTickCount();
+	TickType_t xTickCurr;
+
+	while(1)
+	{
+
+		while(xExecTimeRemaining > 0)
+		{
+			xTickCurr = xTaskGetTickCount();
+
+			if (xTickCurr != xTickPrev)
+			{
+				xExecTimeRemaining--;
+
+				if (xTickCurr % P3_LED_RATE == 0)
+				{
+					STM_EVAL_LEDToggle(LED3);
+				}
+			}
+
+			xTickPrev = xTickCurr;
+
+		}
+
+		STM_EVAL_LEDOff(LED3);
 		DD_TaskDelete(ddSelf);
 	}
 }
