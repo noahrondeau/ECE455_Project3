@@ -207,7 +207,7 @@ int main(void)
 	/* Start the tasks and timer running. */
 	xTaskCreate(vGenPeriodic1, "PG1", configMINIMAL_STACK_SIZE, NULL, DD_TASK_GEN_PRIORITY_PERIODIC, &xGenPeriodic1Handle);
 	xTaskCreate(vGenPeriodic2, "PG2", configMINIMAL_STACK_SIZE, NULL, DD_TASK_GEN_PRIORITY_PERIODIC, &xGenPeriodic2Handle);
-	//xTaskCreate(vGenPeriodic3, "PG3", configMINIMAL_STACK_SIZE, NULL, DD_TASK_GEN_PRIORITY_PERIODIC, &xGenPeriodic3Handle);
+	xTaskCreate(vGenPeriodic3, "PG3", configMINIMAL_STACK_SIZE, NULL, DD_TASK_GEN_PRIORITY_PERIODIC, &xGenPeriodic3Handle);
 	xTaskCreate(vGenAperiodic1, "AG1", configMINIMAL_STACK_SIZE, NULL, DD_TASK_GEN_PRIORITY_APERIODIC, &xGenAperiodic1Handle);
 	DD_SchedulerStart(); // starts the DD_Scheduler and the FreeRTOS scheduler
 

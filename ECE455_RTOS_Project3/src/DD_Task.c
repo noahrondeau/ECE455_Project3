@@ -327,8 +327,8 @@ char* DD_TaskListDataReturn(DD_TaskListHandle_t list)
 				break;
 		}
 
-		//if (pAux->xStatus != DD_TaskUninitialized)
-		//{
+		if (pAux->xStatus != DD_TaskUninitialized)
+		{
 			sprintf(buffer,
 					"Task: %s\tPriority: %d\tAbs Deadline: %u\tStatus: %s\n",
 					(pAux->sTaskName),
@@ -337,7 +337,7 @@ char* DD_TaskListDataReturn(DD_TaskListHandle_t list)
 					temp1);
 
 			strcat(data,buffer);
-		//}
+		}
 
 		hfDebug++;
 		pAux = pAux->pNext;
